@@ -1,0 +1,61 @@
+name: Deploy admin frontend
+
+# Run on push to main (change branch if needed)
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          npm ci
+        working-directory: ./frontend   # <- change if your admin folder is at repo root; remove this line if admin is root
+
+      - name: Build production bundle
+        run: |
+          npm run build
+        working-directory: ./frontend   # <- change or remove as above
+
+      - name: Upload build as artifact (optional step for debugging)
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build
+          path: ./frontend/build  # <- path to build output
+        if: always()              # keeps artifact even when build fails (optional)
+
+      - name: Copy build to server (SCP)
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          source: "./frontend/build/*"    # <- path to build contents
+          target: ${{ secrets.ADMIN_PROJECT_PATH }}
+
+      - name: Set permissions & reload nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: 22
+          script: |
+            # ensure files owned by www-data (or root as you prefer)
+            chown -R www-data:www-data ${{ secrets.ADMIN_PROJECT_PATH }} || true
+            chmod -R 755 ${{ secrets.ADMIN_PROJECT_PATH }} || true
+
+            # reload nginx so new files serve immediately
+            nginx -t || true
+            systemctl reload nginx || true
