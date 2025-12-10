@@ -1,0 +1,101 @@
+import React, { useRef, useState, useEffect } from "react";
+import BikeTable from "../../components/Bikes/BikeTable";
+import { Link } from "react-router-dom";
+import { getBikes } from "../../api";
+
+const Bikes = () => {
+  const [data, setData] = useState([]);
+  const [refresh, setRefresh] = useState(false); 
+
+  const tableHeaders = [
+    "#",
+    // "Company ID",
+    "Company Name",
+    // "Model ID",
+    "Model Name",
+    // "Variant ID",
+    "Variant Name",
+    "Engine CC",
+    // "Created At",
+    // "Updated At",
+    "Action"
+  ];
+
+  const triggerDownloadExcel = useRef(null);
+  const triggerDownloadPDF = useRef(null);
+
+  useEffect(() => {
+    const fetchBikes = async () => {
+      try {
+        const response = await getBikes();
+        if (response.status === 200) {
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching bikes:", error);
+      }
+    };
+
+    fetchBikes();
+  }, [refresh]);
+
+  const handleRefresh = () => {
+    setRefresh((prev) => !prev);
+  };
+
+  return (
+    <div className="page-wrapper">
+      <div className="content container-fluid">
+        <div className="page-header">
+          <div className="content-page-header">
+            <h5>Bikes</h5>
+            <div className="list-btn">
+              <ul className="filter-list">
+                <li>
+                  <div className="dropdown dropdown-action">
+                    <button className="btn btn-primary" data-bs-toggle="dropdown">
+                      <span><i className="fe fe-download me-2" /></span>
+                      Download
+                    </button>
+                    <div className="dropdown-menu dropdown-menu-end">
+                      <ul className="d-block">
+                        <li>
+                          <button className="download-item"
+                            onClick={(e) => { e.preventDefault(); if (triggerDownloadExcel.current) triggerDownloadExcel.current(); }}>
+                            <i className="far fa-file-excel me-2" /> EXCEL
+                          </button>
+                        </li>
+                        <li>
+                          <button className="download-item"
+                            onClick={(e) => { e.preventDefault(); if (triggerDownloadPDF.current) triggerDownloadPDF.current(); }}>
+                            <i className="far fa-file-pdf me-2" /> PDF
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </li>
+                <li>
+                  <Link className="btn btn-primary" to="/addBikeCompany">
+                    <i className="fa fa-plus-circle me-2" /> Add New Bike
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <BikeTable
+          datas={data}
+          triggerDownloadExcel={triggerDownloadExcel}
+          triggerDownloadPDF={triggerDownloadPDF}
+          tableHeaders={tableHeaders}
+          text={"Bikes"}
+          onBikeDeleted={handleRefresh}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default Bikes;

@@ -1,0 +1,350 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Jost', sans-serif;
+}
+
+.ip .btn-primary:hover {
+  color: #2e83ff !important;
+}
+
+/* Chart size */
+.chartjs-render-monitor {
+  width: 280px !important;
+  height: 280px !important;
+}
+
+/* Status indicators */
+.status-indicator i {
+  font-size: 1.5rem;
+}
+
+.card-footer {
+  background: transparent;
+  border-top: 1px solid rgba(0, 0, 0, .125);
+}
+
+.upload-container {
+  margin-bottom: 20px;
+}
+
+#preview {
+  margin-top: 10px;
+  margin-bottom: 20px;
+  max-width: 200px;
+  max-height: 200px;
+  display: none;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+}
+
+.preview {
+  max-width: 200px;
+  max-height: 200px;
+  display: none;
+  border-radius: 8px;
+  border: 2px solid #ddd;
+  margin-top: 10px;
+}
+
+
+.sidebar.open-sidebar {
+  margin-left: 0 !important;
+  /* Show sidebar */
+}
+
+.sidebar-menu ul li.active {
+  background-color: #007bff !important;
+  /* Blue background */
+  color: #fff !important;
+  /* White text */
+}
+
+.sidebar-menu ul li.active a {
+  color: #fff !important;
+  /* Ensure text color is visible */
+  display: flex;
+  /* Make sure the text is properly aligned */
+  align-items: center;
+}
+
+table.table thead {
+  --bs-table-bg: transparent !important;
+  background-color: rgb(46, 131, 255) !important;
+}
+
+.table .thead-light {
+  background-color: rgb(46, 131, 255) !important;
+}
+
+.btn:hover {
+  color: #0d6efd !important;
+}
+
+
+#example img.imagespre {
+  width: 50vh !important;
+  height: auto !important;
+}
+
+
+
+
+
+/* 🚀 Main container */
+#add-bike-container {
+  width: 60%;
+  margin: auto;
+  padding: 20px;
+  text-align: center;
+  background: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🏷️ Title */
+#add-bike-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* 🔄 Tabs */
+#bike-tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.bike-tab-btn {
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  background: #e9ecef;
+  transition: 0.3s;
+  border-radius: 5px;
+}
+
+.bike-tab-btn.active {
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+/* 📌 Forms */
+.bike-form {
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* 🏢 Company Form */
+#bike-company-form,
+#bike-model-form,
+#bike-variant-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.bike-input {
+  width: 80%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* 🔘 Buttons */
+.bike-submit-btn {
+  width: 50%;
+  padding: 12px;
+  border: none;
+  background: #007bff;
+  color: white;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.bike-submit-btn:hover {
+  background: #0056b3;
+}
+
+/* 🎨 Responsive */
+@media (max-width: 768px) {
+  #add-bike-container {
+    width: 90%;
+  }
+
+  .bike-input {
+    width: 100%;
+  }
+
+  .bike-submit-btn {
+    width: 100%;
+  }
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.input-with-icon input.is-invalid {
+  padding-right: 2.5rem;
+  /* space for the icon */
+  border-color: #dc3545;
+}
+
+.input-with-icon .error-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #dc3545;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+input.is-invalid {
+  border: 1.5px solid #dc3545 !important;
+  box-shadow: none;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  /* Light grey */
+  border-top: 4px solid #2e83ff;
+  /* Blue */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 40px auto;
+  /* center horizontally */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Custom Scrollbar for Sidebar */
+.sidebar-inner::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-inner::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.sidebar-inner::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Optional for Firefox */
+.sidebar-inner {
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.error-alert {
+  background-color: #fdecea;
+  /* soft red */
+  border-left: 6px solid #f44336;
+  /* bright red left border */
+  color: #611a15;
+  /* dark muted red text */
+  padding: 16px 20px;
+  margin-top: 20px;
+  border-radius: 4px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.25);
+  position: relative;
+  font-size: 1rem;
+}
+
+.error-alert .icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  fill: #f44336;
+}
+
+.error-alert span {
+  margin-left: 32px;
+  line-height: 1.4;
+}
+
+/* Add this CSS in your stylesheet or component CSS file */
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0;
+  right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px; width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #28a745; /* Green for active */
+}
+
+input:not(:checked) + .slider {
+  background-color: #dc3545; /* Red for inactive */
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+.container .viewdealers{
+  padding: 20px !important;
+}
