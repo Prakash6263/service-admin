@@ -1,0 +1,125 @@
+.bike-page {
+  padding: 20px;
+}
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: 1px solid #cfcfcf;
+  background: #f7f7f7;
+  cursor: pointer;
+}
+
+.tab.active {
+  background: #3b82f6;
+  color: white;
+  border-color: transparent;
+}
+
+.add-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.add-btn {
+  background: #3b82f6;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  border: none;
+}
+
+.table-box {
+  margin-top: 10px;
+}
+.form-box label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 6px;
+  margin-top: 12px;
+}
+
+
+.form-box select,
+.form-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.table thead tr th {
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+
+.table th,
+.table td {
+  padding: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.edit {
+  background: #22c55e;
+  padding: 6px 10px;
+  border-radius: 5px;
+  color: white;
+  margin-right: 10px;
+}
+
+.delete {
+  background: #ef4444;
+  padding: 6px 10px;
+  border-radius: 5px;
+  color: white;
+}
+
+.form-box {
+  padding: 20px;
+  background: #f8f8f8;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.form-box input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.save-btn {
+  background: #3b82f6;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  margin-right: 10px;
+}
+.add-bike-page {
+  margin-top: 40px;
+}
+
+.cancel-btn {
+  background: #aaa;
+  padding: 10px 16px;
+  border-radius: 6px;
+  border: none;
+  color: white;
+}

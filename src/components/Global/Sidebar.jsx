@@ -30,40 +30,53 @@ const Sidebar = () => {
         <div id="sidebar-menu" className="sidebar-menu">
           <ul className="sidebar-vertical">
             <li className="menu-title">
-              <span>GENERAL</span>
+              
             </li>
             <li className={activeItem === "/" ? "active" : ""}>
               <Link onClick={() => handleMenuClick("/")} to={"/"} style={{ textDecoration: "none" }}>
-                <i className="fe fe-home" /> <span> Dashboard</span>{" "}
+                <i className="fa fa-home" />
+                <span> Dashboard</span>{" "}
               </Link>
             </li>
+            <li className={activeItem === "/customers" ? "active" : ""}>
+              <Link onClick={() => handleMenuClick("/customers")} to={"/customers"} style={{ textDecoration: "none" }}>
+                <i className="fa fa-user-circle" />
+                <span> Customers</span>{" "}
+              </Link>
+            </li>
+            <DealerButtunDropDown activeItem={activeItem} handleMenuClick={handleMenuClick} />
 
-            <li className="menu-title">
-              <span>MANAGEMENT</span>
-            </li>
-            <li>
-              <Link onClick={closeSidebar} to="/paymentList" style={{ textDecoration: "none" }}>
-                <i className="fe fe-list" /> <span> Payment List</span>{" "}
-              </Link>
-            </li>
-            <li className={activeItem === "/booking" ? "active" : ""}>
-              <Link onClick={() => handleMenuClick("/booking")} to={"/booking"} style={{ textDecoration: "none" }}>
-                <i className="fa fa-shopping-cart" /> <span> Booking</span>{" "}
-              </Link>
-            </li>
+
             <li className={activeItem === "/admins" ? "active" : ""}>
               <Link onClick={() => handleMenuClick("/admins")} to={"/admins"} style={{ textDecoration: "none" }}>
                 <i className="fa fa-user-secret" /> <span> Admins</span>{" "}
               </Link>
             </li>
-            <DealerButtunDropDown activeItem={activeItem} handleMenuClick={handleMenuClick} />
+            <li className="menu-title">
+              <span>MANAGEMENT</span>
+            </li>
 
-            <li className={activeItem === "/customers" ? "active" : ""}>
-              <Link onClick={() => handleMenuClick("/customers")} to={"/customers"} style={{ textDecoration: "none" }}>
-                <i className="fe fe-home" /> <span> Customers</span>{" "}
+            <BikeButtonDropDown activeItem={activeItem} handleMenuClick={handleMenuClick} />
+            <ServiceDropdown activeItem={activeItem} handleMenuClick={handleMenuClick} />
+            <li className={activeItem === "/booking" ? "active" : ""}>
+              <Link onClick={() => handleMenuClick("/booking")} to={"/booking"} style={{ textDecoration: "none" }}>
+                <i className="fa fa-shopping-cart" /> <span> Bookings</span>{" "}
               </Link>
             </li>
-            <ServiceDropdown activeItem={activeItem} handleMenuClick={handleMenuClick} />
+            <li>
+              <Link onClick={closeSidebar} to="/paymentList" style={{ textDecoration: "none" }}>
+
+                <i className="fa fa-credit-card" />
+
+
+                <span> Payment List</span>{" "}
+              </Link>
+            </li>
+
+
+
+
+
             <li>
               <Link onClick={closeSidebar} to={"/rewards"} style={{ textDecoration: "none" }}>
                 <i className="fa fa-tasks" />{" "}
@@ -75,7 +88,7 @@ const Sidebar = () => {
                 <i className="fa fa-image" /> <span> Banners</span>{" "}
               </Link>
             </li>
-            <BikeButtonDropDown activeItem={activeItem} handleMenuClick={handleMenuClick} />
+
             <li className={activeItem === "/offers" ? "active" : ""}>
               <Link onClick={() => handleMenuClick("/offers")} to={"/offers"} style={{ textDecoration: "none" }}>
                 <i className="fa fa-gift" /> <span> Offers</span>{" "}
@@ -88,9 +101,12 @@ const Sidebar = () => {
             </li>
             <li className={activeItem === "/Login" ? "active" : ""}>
               <Link onClick={handleLogout} style={{ textDecoration: "none" }}>
-                <i className="fe fe-power" /> <span> Logout</span>{" "}
+                <i className="fa fa-sign-out" />
+
+                <span> Logout</span>
               </Link>
             </li>
+
           </ul>
         </div>
       </div>

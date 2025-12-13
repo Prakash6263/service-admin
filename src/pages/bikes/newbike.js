@@ -6,14 +6,12 @@ import {
   addBikeModel,
   addBikeVariant,
   getBikeCompanies,
-  getBikeModels,
-  getBikeVariants
+  getBikeModels
 } from "../../api";
 import "./AddBike.css";
 
 const AddBike = () => {
   const [activeTab, setActiveTab] = useState("company");
-  const [variants, setVariants] = useState([]);
 
   const [companyName, setCompanyName] = useState("");
   const [modelName, setModelName] = useState("");
@@ -33,28 +31,8 @@ const AddBike = () => {
   // Fetch companies
   // -------------------------
   useEffect(() => {
-    if (selectedModelId) {
-      loadVariants(selectedModelId);
-    }
-  }, [selectedModelId]);
-
-  const loadVariants = async (modelId) => {
-    if (!modelId) return;
-
-    try {
-      const res = await getBikeVariants(modelId);
-      if (res.status === 200) {
-        setVariants(res.data);
-      }
-    } catch (err) {
-      Swal.fire("Error", "Failed to load variants", "error");
-    }
-  };
-
-  useEffect(() => {
     fetchCompanies();
   }, []);
-  // ⭐ ADD THIS HERE ⭐
 
   const fetchCompanies = async () => {
     try {
@@ -106,13 +84,12 @@ const AddBike = () => {
       model_name: modelName
     });
 
-    if (res.status === 200 || res.success) {
+    if (res.message === "Bike model added successfully") {
       Swal.fire("Success", "Model added!", "success");
       setModelName("");
       loadModels(selectedCompanyId);
       setShowForm(false);
     }
-
   };
 
   const submitVariant = async () => {
@@ -126,10 +103,6 @@ const AddBike = () => {
     });
 
     if (res.status === 200) {
-
-
-      loadVariants(selectedModelId);
-
       Swal.fire("Success", "Variant added!", "success");
       setVariantName("");
       setEngineCC("");
@@ -183,96 +156,51 @@ const AddBike = () => {
           </>
         )}
 
+        {/* ADD VARIANT (WITH COMPANY + MODEL DROPDOWN) */}
         {activeTab === "variant" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
-              gap: "12px",
-              alignItems: "end",
-              marginTop: "10px"
-            }}
-          >
-            {/* Company */}
-            <div>
-              <label>Select Company</label>
-              <select
-                value={selectedCompanyId}
-                onChange={(e) => setSelectedCompanyId(e.target.value)}
-                style={{ width: "100%" }}
-              >
-                <option value="">Select Company</option>
-                {companies.map((c) => (
-                  <option key={c._id} value={c._id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+          <>
+            <label>Select Company</label>
+            <select
+              value={selectedCompanyId}
+              onChange={(e) => setSelectedCompanyId(e.target.value)}
+            >
+              <option value="">Select Company</option>
+              {companies.map((c) => (
+                <option key={c._id} value={c._id}>{c.name}</option>
+              ))}
+            </select>
 
-            {/* Model */}
-            <div>
-              <label>Select Model</label>
-              <select
-                value={selectedModelId}
-                onChange={(e) => setSelectedModelId(e.target.value)}
-                disabled={!selectedCompanyId}
-                style={{ width: "100%" }}
-              >
-                <option value="">Select Model</option>
-                {models.map((m) => (
-                  <option key={m._id} value={m._id}>{m.model_name}</option>
-                ))}
-              </select>
-            </div>
+            <label>Select Model</label>
+            <select
+              value={selectedModelId}
+              onChange={(e) => setSelectedModelId(e.target.value)}
+              disabled={!selectedCompanyId}
+            >
+              <option value="">Select Model</option>
+              {models.map((m) => (
+                <option key={m._id} value={m._id}>{m.model_name}</option>
+              ))}
+            </select>
 
-            {/* Variant Name */}
-            <div>
-              <label>Variant Name</label>
-              <input
-                value={variantName}
-                onChange={(e) => setVariantName(e.target.value)}
-                placeholder="Variant name"
-                style={{ width: "100%" }}
-              />
-            </div>
+            <label>Variant Name</label>
+            <input
+              value={variantName}
+              onChange={(e) => setVariantName(e.target.value)}
+              placeholder="Enter variant name"
+            />
 
-            {/* Engine CC */}
-            <div>
-              <label>Engine CC</label>
-              <input
-                value={engineCC}
-                onChange={(e) => setEngineCC(e.target.value)}
-                placeholder="CC"
-                style={{ width: "100%" }}
-              />
-            </div>
+            <label>Engine CC</label>
+            <input
+              value={engineCC}
+              onChange={(e) => setEngineCC(e.target.value)}
+              placeholder="Enter engine CC"
+            />
 
-            {/* Save Button */}
-
-          </div>
+            <button className="save-btn" onClick={submitVariant}>Save</button>
+          </>
         )}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-            marginTop: "12px"
-          }}
-        >
-          <button
-            className="save-btn"
-            onClick={submitVariant}
-          >
-            Save
-          </button>
 
-          <button
-            className="cancel-btn"
-            onClick={() => setShowForm(false)}
-          >
-            Cancel
-          </button>
-        </div>
-
+        <button className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
       </div>
     );
   };
@@ -294,8 +222,8 @@ const AddBike = () => {
               <tr key={c._id}>
                 <td>{c.name}</td>
                 <td>
-
-                  <button className="delete">Remove</button>
+                  <button className="edit">Edit</button>
+                  <button className="delete">Delete</button>
                 </td>
               </tr>
             ))}
@@ -318,8 +246,8 @@ const AddBike = () => {
               <tr key={m._id}>
                 <td>{m.model_name}</td>
                 <td>
-
-                  <button className="delete">Remove</button>
+                  <button className="edit">Edit</button>
+                  <button className="delete">Delete</button>
                 </td>
               </tr>
             ))}
@@ -334,24 +262,14 @@ const AddBike = () => {
           <tr>
             <th>Variant Name</th>
             <th>Engine CC</th>
-            <th>Actions</th>
+            <th style={{ width: "180px" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {variants.map((v) => (
-            <tr key={v._id}>
-              <td>{v.variant_name}</td>
-              <td>{v.engine_cc}</td>
-              <td>
-
-                <button className="delete">Remove</button>
-              </td>
-            </tr>
-          ))}
+          {/* You can load variants list here */}
         </tbody>
       </table>
     );
-
   };
 
   return (
