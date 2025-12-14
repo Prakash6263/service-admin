@@ -2,7 +2,7 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 const API_BASE_URL = 'https://api.mrbikedoctor.cloud/bikedoctor';
-// const API_BASE_URL = 'https://dr-bike-backend.onrender.com/bikedoctor';
+// const API_BASE_URL = 'http://localhost:8001/bikedoctor';
 
 // test 
 
@@ -208,20 +208,29 @@ export const getBikes = () => apiRequest("GET", "/bike/bikes", {}, false);
 
 export const deleteBike = async (bikeId) => {
   try {
+    const userData = JSON.parse(localStorage.getItem("userData"));
+const userId = userData?._id;
+
+
+    if (!userId) {
+      Swal.fire("Error", "Admin ID missing. Please login again.", "error");
+      return;
+    }
+
     const response = await axios.delete(
-      `${API_BASE_URL}/bike/deleteBike`,
+      `${API_BASE_URL}/bike/deleteBike/${userId}`,
       {
         data: { bike_id: bikeId },
-        // headers: {
-        //   "Content-Type": "application/json",  
-        //   "token": getAuthToken(),
-        // },
+        headers: {
+          "Content-Type": "application/json",
+          "token": getAuthToken(),
+        },
       }
     );
 
     Swal.fire({
       icon: "success",
-      title: "Success!",
+      title: "Deleted!",
       text: response.data.message || "Bike deleted successfully",
       timer: 2000,
       showConfirmButton: false,
@@ -240,6 +249,7 @@ export const deleteBike = async (bikeId) => {
     throw error;
   }
 };
+
 
 export const addService = async (serviceData) => {
   try {

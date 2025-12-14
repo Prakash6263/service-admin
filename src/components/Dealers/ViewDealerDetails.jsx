@@ -51,6 +51,7 @@ const VendorDealerDetails = () => {
         const fetchDealer = async () => {
             try {
                 const res = await fetch(`https://api.mrbikedoctor.cloud/bikedoctor/dealer/view/${id}`);
+                // const res = await fetch(`https://api.mrbikedoctor.cloud/bikedoctor/dealer/view/${id}`);
                 const data = await res.json();
                 console.log("Data", data)
                 if (!res.ok) throw new Error(data.message || 'Failed to load dealer');
