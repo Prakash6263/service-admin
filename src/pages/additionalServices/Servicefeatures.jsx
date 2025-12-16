@@ -4,7 +4,7 @@ const Servicefeatures = () => {
   return (
     <>
       
-      <div className="page-wrapper">
+     <div className="page-wrapper mt-5">
         <div className="content container-fluid">
           {/* Page Header */}
           <div className="page-header">

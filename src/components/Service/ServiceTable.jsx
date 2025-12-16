@@ -162,51 +162,38 @@ const ServiceTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, 
 
   triggerDownloadExcel.current = onDownload;
   triggerDownloadPDF.current = exportToPDF;
-
+    const truncateText = (text = "", maxLength = 30) => {
+        if (!text) return "N/A";
+        return text.length > maxLength
+            ? text.substring(0, maxLength) + "..."
+            : text;
+    };
   const memoizedServiceList = currentData.map((data, index) => (
     <tr key={data._id}>
       <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-      <td>{data._id || "N/A"}</td>
-      <td>{data.name || "N/A"}</td>
+      <td>{truncateText(data._id) || "N/A"}</td>
       <td>{data.image ? <ImagePreview image={data.image} /> : "N/A"}</td>
-      {/* <td>{data.description || "N/A"}</td> */}
+      <td>{truncateText(data.name) || "N/A"}</td>
+
+
       <td
         style={{ whiteSpace: "normal", wordBreak: "break-word", maxWidth: "300px" }}
         title={data.description}
       >
         {data.description
-          ? data.description.length > 100
+          ? truncateText(data.description.length > 100
             ? `${data.description.slice(0, 100)}...`
-            : data.description
+            : data.description)
           : "N/A"}
       </td>
       <td
         style={{ whiteSpace: "normal", wordBreak: "break-word", maxWidth: "500px" }}
       >
-        {data.dealer_id?.shopName || "N/A"}
+        {truncateText(data.dealer_id?.shopName) || "N/A"}
       </td>
 
-      {/* <td>
-        {data.bikes && data.bikes.length > 0 ? (
-          <ul>
-            {data.bikes.map((bike, idx) => (
-              <li key={idx}>{bike.cc} CC - ₹{bike.price}</li>
-            ))}
-          </ul>
-        ) : "N/A"}
-      </td> */}
-      <td>
-        {data.bikes && data.bikes.length > 0 ? (
-          <ul>
-            {data.bikes
-              .sort((a, b) => a.cc - b.cc)
-              .map((bike, idx) => (
-                <li key={idx}>{bike.cc} CC - ₹{bike.price}</li>
-              ))
-            }
-          </ul>
-        ) : "N/A"}
-      </td>
+
+
       <td>{new Date(data.createdAt).toLocaleDateString()}</td>
       <td>{new Date(data.updatedAt).toLocaleDateString()}</td>
       <td className="d-flex align-items-center">
@@ -221,9 +208,7 @@ const ServiceTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, 
               </button>
             </li>
             <li>
-              {/* <button className="dropdown-item" onClick={() => handleEdit(data)}>
-                <i className="far fa-edit me-2" /> Editsssss
-              </button> */}
+         
               <button
                 className="dropdown-item"
                 onClick={() => navigate(`/edit-services/${data._id}`)}

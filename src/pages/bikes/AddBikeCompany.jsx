@@ -93,7 +93,7 @@ const AddBike = () => {
       Swal.fire("Success", "Company added!", "success");
       setCompanyName("");
       fetchCompanies();
-      setShowForm(false);
+
     }
   };
 
@@ -110,7 +110,7 @@ const AddBike = () => {
       Swal.fire("Success", "Model added!", "success");
       setModelName("");
       loadModels(selectedCompanyId);
-      setShowForm(false);
+
     }
 
   };
@@ -133,7 +133,7 @@ const AddBike = () => {
       Swal.fire("Success", "Variant added!", "success");
       setVariantName("");
       setEngineCC("");
-      setShowForm(false);
+
     }
   };
 

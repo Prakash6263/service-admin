@@ -11,7 +11,13 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
 
     const tableRef = useRef(null);
     const navigate = useNavigate();
-    console.log("datas", datas);
+    const truncateText = (text = "", maxLength = 30) => {
+        if (!text) return "N/A";
+        return text.length > maxLength
+            ? text.substring(0, maxLength) + "..."
+            : text;
+    };
+
 
     const { onDownload } = useDownloadExcel({
         currentTableRef: tableRef.current,
@@ -100,35 +106,60 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
         return currentData.map((data, index) => (
             <tr key={data._id}>
                 <td>{index + 1}</td>
-                <td>{data._id || "N/A"}</td>
-                <td>{data.name || "N/A"}</td>
-                <td>
-                    {/* {data.image ? <ImagePreview image={data.image} /> : "N/A"} */}
-                    {data.image}
+
+                <td title={data._id}>
+                    {truncateText(data._id)}
                 </td>
-                <td>{data.description || "N/A"}</td>
-
-                <td>{data.dealer_id?.shopName || "N/A"}</td>
-
                 <td>
-                    {data.bikes && data.bikes.length > 0 ? (
-                        <ul>
-                            {data.bikes.map((bike, idx) => (
-                                <li key={idx}>{bike.cc} CC - ₹{bike.price}</li>
-                            ))}
-                        </ul>
+                    {data.image ? (
+                        <img
+                            src={data.image}
+                            alt="service"
+                            style={{
+                                width: "50px",
+                                height: "50px",
+                                objectFit: "cover",
+                                borderRadius: "6px"
+                            }}
+                        />
                     ) : "N/A"}
                 </td>
 
-                <td>{new Date(data.createdAt).toLocaleDateString()}</td>
-                <td>{new Date(data.updatedAt).toLocaleDateString()}</td>
+                <td title={data.name}>
+                    {truncateText(data.name)}
+                </td>
 
-                <td className="d-flex align-items-center">
-                    <div className="dropdown">
-                        <button className="btn-action-icon" data-bs-toggle="dropdown">
+
+
+                <td title={data.description}>
+                    {truncateText(data.description)}
+                </td>
+
+                <td title={data.dealer_id?.shopName}>
+                    {truncateText(data.dealer_id?.shopName)}
+                </td>
+
+
+
+                <td>
+                    {new Date(data.createdAt).toLocaleDateString()}
+                </td>
+
+                <td>
+                    {new Date(data.updatedAt).toLocaleDateString()}
+                </td>
+
+                <td className="text-center">
+                    <div className="dropdown position-static">
+                        <button
+                            className="btn btn-light btn-sm"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                        >
                             <i className="fas fa-ellipsis-v" />
                         </button>
-                        <ul className="dropdown-menu dropdown-menu-end">
+
+                        <ul className="dropdown-menu dropdown-menu-end shadow">
                             <li>
                                 <button
                                     className="dropdown-item"
@@ -137,6 +168,7 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                                     <i className="far fa-eye me-2" /> View
                                 </button>
                             </li>
+
                             <li>
                                 <button
                                     className="dropdown-item"
@@ -145,9 +177,10 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                                     <i className="far fa-edit me-2" /> Edit
                                 </button>
                             </li>
+
                             <li>
                                 <button
-                                    className="dropdown-item"
+                                    className="dropdown-item text-danger"
                                     onClick={() => handleDelete(data)}
                                 >
                                     <i className="far fa-trash-alt me-2" /> Delete
@@ -156,9 +189,11 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                         </ul>
                     </div>
                 </td>
+
             </tr>
         ));
     }, [currentData]);
+
 
 
     return (
@@ -168,7 +203,12 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                     <div className="card-table card p-2">
                         <div className="card-body">
                             <div className="table-responsive">
-                                <table ref={tableRef} id="example" className="table table-striped">
+                                <table
+                                    ref={tableRef}
+                                    id="example"
+                                    className="table table-striped table-bordered align-middle w-100"
+                                    style={{ minWidth: "1200px" }}
+                                >
                                     <thead className="thead-light" style={{ backgroundColor: "#2e83ff" }}>
                                         <tr>{tableHeaders.map((header, index) => (<th key={index}>{header}</th>))}</tr>
                                     </thead>

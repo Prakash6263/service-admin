@@ -20,11 +20,10 @@ const AServices = () => {
   const tableHeaders = [
     "#",
     "Service ID",
-    "Service Name",
     "Image",
+    "Service Name",
     "Description",
     "Dealer Name",
-    "Bike Details (CC & Price)",
     "Created At",
     "Updated At",
     "Action",
@@ -54,7 +53,7 @@ const AServices = () => {
   }, []);
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper mt-5">
       <div className="content container-fluid">
         <div className="page-header">
           <div className="content-page-header">

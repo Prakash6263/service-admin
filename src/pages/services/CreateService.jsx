@@ -5,7 +5,7 @@ import ServiceForm from "../../components/Service/ServiceForm";
 const CreateService = () => {
       const navigate = useNavigate();
   return (
-    <div className="page-wrapper">
+   <div className="page-wrapper mt-5">
       <div className="content container-fluid">
         <div className="page-header">
           <div className="content-page-header">
