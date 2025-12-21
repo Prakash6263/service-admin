@@ -6,7 +6,7 @@ import Swal from "sweetalert2"
 import { addDealer, updateDealer } from "../../api"
 import { useNavigate } from "react-router-dom"
 
-// const API_BASE_URL = "http://localhost:8001/bikedoctor"
+// const API_BASE_URL = "http://localhost:8001/bikedoctor"/
 const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor"
 
 const DealerForm = ({ dealerData, dealerId, isEdit }) => {
