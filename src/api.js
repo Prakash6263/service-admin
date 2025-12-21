@@ -640,16 +640,12 @@ export const getOfferById = async (id) =>
 
 export const editOffer = async (id, offerData) => {
   try {
-    const response = await axios.put(
-      `${API_BASE_URL}/offer/editoffer/${id}`,
-      offerData,
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "token": getAuthToken(),
-        },
-      }
-    );
+    const response = await axios.put(`${API_BASE_URL}/offer/editoffer/${id}`, offerData, {
+      headers: {
+        "Content-Type": "application/json",
+        token: getAuthToken(),
+      },
+    })
 
     Swal.fire({
       icon: "success",
@@ -657,21 +653,24 @@ export const editOffer = async (id, offerData) => {
       text: response.data.message || "The offer has been updated.",
       timer: 2000,
       showConfirmButton: false,
-    });
+    })
 
-    return response.data;
+    return response.data
   } catch (error) {
-    console.error("Error updating offer:", error.response?.data || error.message);
+    console.error("Error updating offer:", error.response?.data || error.message)
 
     Swal.fire({
       icon: "error",
       title: "Failed to Update Offer",
       text: error.response?.data?.message || "Something went wrong!",
-    });
+    })
 
-    throw error;
+    throw error
   }
-};
+}
 
-export const getDealersVerify = () =>
-  apiRequest("GET", "/dealerAuth/pending-registrations", {}, false);
+export const updateOffer = editOffer
+
+export const getDealersVerify = () => apiRequest("GET", "/dealerAuth/pending-registrations", {}, false)
+
+

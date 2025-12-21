@@ -1,83 +1,88 @@
-import { useState } from 'react';
-import StateCitySelect from '../Global/StateCitySelect';
-import Swal from 'sweetalert2';
-import { addDealer, updateDealer } from "../../api";
-import { useNavigate } from 'react-router-dom';
+"use client"
 
-const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor";
+import { useState } from "react"
+import StateCitySelect from "../Global/StateCitySelect"
+import Swal from "sweetalert2"
+import { addDealer, updateDealer } from "../../api"
+import { useNavigate } from "react-router-dom"
+
+// const API_BASE_URL = "http://localhost:8001/bikedoctor"
+const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor"
 
 const DealerForm = ({ dealerData, dealerId, isEdit }) => {
-  const navigate = useNavigate();
-  const [shopImages, setShopImages] = useState([]);
+  const navigate = useNavigate()
+  const [shopImages, setShopImages] = useState([])
   const [existingShopImages, setExistingShopImages] = useState(
     isEdit && dealerData?.shopImages?.length > 0
-      ? dealerData.shopImages.map(img => `${API_BASE_URL}/uploads/${img}`)
-      : []
-  );
+      ? dealerData.shopImages.map((img) => `${API_BASE_URL}/uploads/${img}`)
+      : [],
+  )
   const [existingImages, setExistingImages] = useState({
-    panCardFront: isEdit && dealerData?.documents?.panCardFront
-      ? `${API_BASE_URL}/uploads/${dealerData.documents.panCardFront}`
-      : null,
-    aadharFront: isEdit && dealerData?.documents?.aadharFront
-      ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharFront}`
-      : null,
-    aadharBack: isEdit && dealerData?.documents?.aadharBack
-      ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharBack}`
-      : null,
-  });
+    panCardFront:
+      isEdit && dealerData?.documents?.panCardFront
+        ? `${API_BASE_URL}/uploads/${dealerData.documents.panCardFront}`
+        : null,
+    aadharFront:
+      isEdit && dealerData?.documents?.aadharFront
+        ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharFront}`
+        : null,
+    aadharBack:
+      isEdit && dealerData?.documents?.aadharBack ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharBack}` : null,
+  })
   const handleMultipleImages = (e) => {
-    const files = Array.from(e.target.files);
+    const files = Array.from(e.target.files)
 
     // Validate number of images (max 5 total)
     if (files.length + previewUrls.length + existingShopImages.length > 5) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        shopImages: "You can upload a maximum of 5 images"
-      }));
-      return;
+        shopImages: "You can upload a maximum of 5 images",
+      }))
+      return
     }
 
     // Validate file types and sizes
-    const validFiles = files.filter(file => {
-      if (!file.type.match('image.*')) {
-        return false;
+    const validFiles = files.filter((file) => {
+      if (!file.type.match("image.*")) {
+        return false
       }
-      if (file.size > 2 * 1024 * 1024) { // 2MB limit
-        setErrors(prev => ({
+      if (file.size > 2 * 1024 * 1024) {
+        // 2MB limit
+        setErrors((prev) => ({
           ...prev,
-          shopImages: "Image size should be less than 2MB"
-        }));
-        return false;
+          shopImages: "Image size should be less than 2MB",
+        }))
+        return false
       }
-      return true;
-    });
+      return true
+    })
 
     // Create preview URLs
-    const newPreviewUrls = validFiles.map(file => URL.createObjectURL(file));
-    setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
-    setShopImages(prev => [...prev, ...validFiles]);
+    const newPreviewUrls = validFiles.map((file) => URL.createObjectURL(file))
+    setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
+    setShopImages((prev) => [...prev, ...validFiles])
 
     // Clear any errors
-    setErrors(prev => ({ ...prev, shopImages: undefined }));
-  };
+    setErrors((prev) => ({ ...prev, shopImages: undefined }))
+  }
 
   const handleRemoveImage = (index, isExisting = false) => {
     if (isExisting) {
-      setExistingShopImages(prev => prev.filter((_, i) => i !== index));
+      setExistingShopImages((prev) => prev.filter((_, i) => i !== index))
     } else {
-      URL.revokeObjectURL(previewUrls[index]);
-      setPreviewUrls(prev => prev.filter((_, i) => i !== index));
-      setShopImages(prev => prev.filter((_, i) => i !== index));
+      URL.revokeObjectURL(previewUrls[index])
+      setPreviewUrls((prev) => prev.filter((_, i) => i !== index))
+      setShopImages((prev) => prev.filter((_, i) => i !== index))
     }
-  };
+  }
   const handleFileUpload = (e, setter, fieldName) => {
-    const file = e.target.files[0];
+    const file = e.target.files[0]
     if (file) {
-      setter(file);
-      setExistingImages(prev => ({ ...prev, [fieldName]: null }));
-      setErrors(prev => ({ ...prev, [fieldName]: undefined }));
+      setter(file)
+      setExistingImages((prev) => ({ ...prev, [fieldName]: null }))
+      setErrors((prev) => ({ ...prev, [fieldName]: undefined }))
     }
-  };
+  }
   console.log("Dealer", dealerData)
   const initializeFormData = () => {
     if (isEdit && dealerData) {
@@ -87,9 +92,9 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
         phone: dealerData.phone,
         shopPincode: dealerData.shopPincode,
         ownerName: dealerData.ownerName,
-        fullAddress: dealerData.permanentAddress.address,
-        city: dealerData.permanentAddress.city,
-        state: dealerData.permanentAddress.state,
+        fullAddress: dealerData.permanentAddress?.address || "",
+        city: dealerData.permanentAddress?.city || "",
+        state: dealerData.permanentAddress?.state || "",
         comission: dealerData.commission,
         tax: dealerData.tax,
         latitude: dealerData.latitude,
@@ -99,91 +104,92 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
         alternatePhone: dealerData.phone,
         shopState: dealerData.shopState,
         shopCity: dealerData.shopCity,
-        shopPinCode: dealerData.shopPinCode || '',
-        accountHolderName: dealerData.bankDetails?.accountHolderName || '',
-        ifscCode: dealerData.bankDetails?.ifscCode || '',
-        bankName: dealerData.bankDetails?.bankName || '',
-        accountNumber: dealerData.bankDetails?.accountNumber || '',
+        shopPinCode: dealerData.shopPinCode || "",
+        accountHolderName: dealerData.bankDetails?.accountHolderName || "",
+        ifscCode: dealerData.bankDetails?.ifscCode || "",
+        bankName: dealerData.bankDetails?.bankName || "",
+        accountNumber: dealerData.bankDetails?.accountNumber || "",
         permanentAddress: dealerData.permanentAddress?.address || "",
-        presentAddress: dealerData.presentAddress?.address || '',
+        presentAddress: dealerData.presentAddress?.address || "",
         permanentState: dealerData.permanentAddress?.state || "",
         permanentCity: dealerData.permanentAddress?.city || "",
         presentState: dealerData.presentAddress?.state || "",
         presentCity: dealerData.presentAddress?.city || "",
-        aadharCardNo: dealerData.aadharCardNo || '',
-        panCardNo: dealerData.panCardNo || '',
-        gstNumber: dealerData.gstNumber || ''
-      };
+        aadharCardNo: dealerData.aadharCardNo || "",
+        panCardNo: dealerData.panCardNo || "",
+        gstNumber: dealerData.gstNumber || "",
+      }
     }
     return {
-      shopName: '',
-      email: '',
-      phone: '',
-      shopPincode: '',
-      ownerName: '',
-      fullAddress: '',
-      city: '',
-      state: '',
-      comission: '',
-      tax: '',
-      latitude: '',
-      longitude: '',
-      personalEmail: '',
-      personalPhone: '',
-      alternatePhone: '',
-      shopState: 'Madhya Pradesh',
-      shopCity: 'Indore',
-      shopPinCode: '',
-      accountHolderName: '',
-      ifscCode: '',
-      bankName: '',
-      accountNumber: '',
+      shopName: "",
+      email: "",
+      phone: "",
+      shopPincode: "",
+      ownerName: "",
+      fullAddress: "",
+      city: "",
+      state: "",
+      comission: "",
+      tax: "",
+      latitude: "",
+      longitude: "",
+      personalEmail: "",
+      personalPhone: "",
+      alternatePhone: "",
+      shopState: "Madhya Pradesh",
+      shopCity: "Indore",
+      shopPinCode: "",
+      accountHolderName: "",
+      ifscCode: "",
+      bankName: "",
+      accountNumber: "",
       permanentAddress: "",
-      presentAddress: '',
+      presentAddress: "",
       permanentState: "",
       permanentCity: "",
       presentState: "",
       presentCity: "",
-      aadharCardNo: '',
-      panCardNo: '',
-      gstNumber: ''
-    };
-  };
+      aadharCardNo: "",
+      panCardNo: "",
+      gstNumber: "",
+    }
+  }
 
-  const [formData, setFormData] = useState(initializeFormData());
-  const [errors, setErrors] = useState({});
-  const [previewUrls, setPreviewUrls] = useState([]);
-  const [panCardFront, setPanCardFront] = useState(null);
-  const [aadharFront, setAadharFront] = useState(null);
-  const [aadharBack, setAadharBack] = useState(null);
+  const [formData, setFormData] = useState(initializeFormData())
+  const [errors, setErrors] = useState({})
+  const [previewUrls, setPreviewUrls] = useState([])
+  const [panCardFront, setPanCardFront] = useState(null)
+  const [aadharFront, setAadharFront] = useState(null)
+  const [aadharBack, setAadharBack] = useState(null)
   const [sameAsPermanent, setSameAsPermanent] = useState(
-    isEdit && dealerData &&
-    dealerData.presentAddress?.address === dealerData.permanentAddress?.address &&
-    dealerData.presentAddress?.state === dealerData.permanentAddress?.state &&
-    dealerData.presentAddress?.city === dealerData.permanentAddress?.city
-  );
+    isEdit &&
+      dealerData &&
+      dealerData.presentAddress?.address === dealerData.permanentAddress?.address &&
+      dealerData.presentAddress?.state === dealerData.permanentAddress?.state &&
+      dealerData.presentAddress?.city === dealerData.permanentAddress?.city,
+  )
 
   // Handle changes in form inputs
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, type, checked } = e.target
 
     if (name === "sameAsPermanent") {
-      setSameAsPermanent(checked);
+      setSameAsPermanent(checked)
       if (checked) {
         setFormData((prev) => ({
           ...prev,
           presentAddress: prev.permanentAddress,
           presentState: prev.permanentState,
           presentCity: prev.permanentCity,
-        }));
+        }))
       }
-      return;
+      return
     }
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }));
+    }))
 
     if (
       (name === "personalPhone" && value === formData.alternatePhone) ||
@@ -192,33 +198,33 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
       setErrors((prev) => ({
         ...prev,
         alternatePhone: "Alternate phone must be different from personal phone",
-      }));
+      }))
     } else {
       setErrors((prev) => ({
         ...prev,
         alternatePhone: undefined,
-      }));
+      }))
     }
-  };
+  }
 
   // Form validation
   const validate = () => {
-    const newErrors = {};
-    return Object.keys(newErrors).length === 0;
-  };
+    const newErrors = {}
+    return Object.keys(newErrors).length === 0
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!validate()) {
-      return;
+      return
     }
 
-    console.log("Form Data", formData);
+    console.log("Form Data", formData)
 
-    const form = new FormData();
+    const form = new FormData()
 
     if (isEdit && dealerId) {
-      form.append('id', dealerId);
+      form.append("id", dealerId)
     }
 
     console.log("Form", form)
@@ -254,59 +260,59 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
       "tax",
       "aadharCardNo",
       "panCardNo",
-      "gstNumber"
-    ];
+      "gstNumber",
+    ]
 
     allowedTextFields.forEach((key) => {
       if (formData[key] !== undefined && formData[key] !== null) {
-        form.append(key, formData[key]);
+        form.append(key, formData[key])
       }
-    });
+    })
 
-    if (panCardFront) form.append("panCardFront", panCardFront);
-    if (aadharFront) form.append("aadharFront", aadharFront);
-    if (aadharBack) form.append("aadharBack", aadharBack);
+    if (panCardFront) form.append("panCardFront", panCardFront)
+    if (aadharFront) form.append("adharCardFront", aadharFront)
+    if (aadharBack) form.append("shopImages", aadharBack)
 
     try {
-      let response;
+      let response
       if (isEdit) {
-        response = await updateDealer(form);
+        response = await updateDealer(form)
       } else {
-        response = await addDealer(form);
+        response = await addDealer(form)
       }
 
-      console.log("Response", response);
+      console.log("Response", response)
       if (response.success && response.message === "Dealer updated successfully") {
         Swal.fire({
           title: "Success!",
           text: response.message || (isEdit ? "Dealer updated successfully" : "Dealer added successfully"),
-          icon: "success"
-        });
-        setFormData(initializeFormData());
-        setPreviewUrls([]);
-        setPanCardFront(null);
-        setAadharFront(null);
-        setAadharBack(null);
+          icon: "success",
+        })
+        setFormData(initializeFormData())
+        setPreviewUrls([])
+        setPanCardFront(null)
+        setAadharFront(null)
+        setAadharBack(null)
 
-        navigate("/dealers");
+        navigate("/dealers")
       }
     } catch (error) {
-      const errorData = error.response?.data;
+      const errorData = error.response?.data
       Swal.fire({
         title: "Error!",
         text: errorData?.message || (isEdit ? "Failed to update dealer" : "Failed to add dealer"),
-        icon: "error"
-      });
+        icon: "error",
+      })
 
       if (errorData?.field) {
-        setErrors(prev => ({
+        setErrors((prev) => ({
           ...prev,
-          [errorData.field]: errorData.message
-        }));
+          [errorData.field]: errorData.message,
+        }))
       }
-      console.error("Submission error:", error);
+      console.error("Submission error:", error)
     }
-  };
+  }
 
   return (
     <div className="row">
@@ -319,9 +325,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Shop Name<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Shop Name<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
-                      className={`form-control ${errors.shopName ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.shopName ? "is-invalid" : ""}`}
                       type="text"
                       name="shopName"
                       value={formData.shopName}
@@ -331,10 +339,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                     {errors.shopName && <div className="invalid-feedback">{errors.shopName}</div>}
                   </div>
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Shop Email<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Shop Email<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
                       type="email"
-                      className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.email ? "is-invalid" : ""}`}
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
@@ -348,10 +358,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Shop Contact<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Shop Contact<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
                       type="tel"
-                      className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.phone ? "is-invalid" : ""}`}
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
@@ -366,9 +378,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Shop Pincode<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Shop Pincode<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
-                      className={`form-control ${errors.shopPincode ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.shopPincode ? "is-invalid" : ""}`}
                       type="text"
                       name="shopPincode"
                       value={formData.shopPincode}
@@ -379,10 +393,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                     {errors.shopPincode && <div className="invalid-feedback">{errors.shopPincode}</div>}
                   </div>
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Owner Name<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Owner Name<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
                       type="text"
-                      className={`form-control ${errors.ownerName ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.ownerName ? "is-invalid" : ""}`}
                       name="ownerName"
                       value={formData.ownerName}
                       onChange={handleChange}
@@ -396,9 +412,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Full Address<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Full Address<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
-                      className={`form-control ${errors.fullAddress ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.fullAddress ? "is-invalid" : ""}`}
                       type="text"
                       name="fullAddress"
                       value={formData.fullAddress}
@@ -420,25 +438,27 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="flex-fill input-block">
-                    <label className="form-control-label">Commission (%)<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-control-label">
+                      Commission (%)<em style={{ color: "red" }}>*</em>
+                    </label>
                     <input
-                      className={`form-control ${errors.comission ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.comission ? "is-invalid" : ""}`}
                       type="number"
                       name="comission"
-                      value={formData.comission ?? ''}
+                      value={formData.comission ?? ""}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? null : Number(e.target.value);
-                        setFormData(prev => ({
+                        const value = e.target.value === "" ? null : Number(e.target.value)
+                        setFormData((prev) => ({
                           ...prev,
-                          comission: isNaN(value) ? null : value
-                        }));
+                          comission: isNaN(value) ? null : value,
+                        }))
                       }}
                       placeholder="0-100%"
                       step="0.01"
                       min="0"
                       max="100"
                       onKeyDown={(e) => {
-                        if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                        if (["e", "E", "+", "-"].includes(e.key)) e.preventDefault()
                       }}
                     />
                     {errors.comission && <div className="invalid-feedback">{errors.comission}</div>}
@@ -447,17 +467,17 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                     <label className="form-control-label">Tax (%)</label>
                     <input
                       type="number"
-                      className={`form-control ${errors.tax ? 'is-invalid' : ''}`}
+                      className={`form-control ${errors.tax ? "is-invalid" : ""}`}
                       name="tax"
-                      value={formData.tax || ''}
+                      value={formData.tax || ""}
                       onChange={(e) => {
-                        const value = e.target.value === '' ? null : parseFloat(e.target.value);
+                        const value = e.target.value === "" ? null : Number.parseFloat(e.target.value)
                         handleChange({
                           target: {
-                            name: 'tax',
-                            value: isNaN(value) ? null : value
-                          }
-                        });
+                            name: "tax",
+                            value: isNaN(value) ? null : value,
+                          },
+                        })
                       }}
                       placeholder="Enter tax percentage (0-18)"
                       step="0.01"
@@ -471,9 +491,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
 
               <div className="input-block mb-3">
                 <div className="input-block mb-3">
-                  <label className="form-control-label">Latitude<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Latitude<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.latitude ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.latitude ? "is-invalid" : ""}`}
                     type="number"
                     name="latitude"
                     value={formData.latitude}
@@ -484,10 +506,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                   {errors.latitude && <div className="invalid-feedback">{errors.latitude}</div>}
                 </div>
                 <div className="input-block mb-3">
-                  <label className="form-control-label">Longitude<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Longitude<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
                     type="number"
-                    className={`form-control ${errors.longitude ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.longitude ? "is-invalid" : ""}`}
                     name="longitude"
                     value={formData.longitude}
                     onChange={handleChange}
@@ -501,15 +525,13 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               <div className="mb-3 w-100">
                 <div className="d-flex gap-3">
                   <div className="mb-4">
-                    <label className="form-label fw-semibold">Shop Images<em style={{ color: "red" }}>*</em></label>
+                    <label className="form-label fw-semibold">
+                      Shop Images<em style={{ color: "red" }}>*</em>
+                    </label>
                     <div className="d-flex flex-wrap gap-3">
                       {existingShopImages.map((url, idx) => (
                         <div key={`existing-${idx}`} className="image-preview-container">
-                          <img
-                            src={url}
-                            alt={`Shop ${idx + 1}`}
-                            className="image-preview"
-                          />
+                          <img src={url || "/placeholder.svg"} alt={`Shop ${idx + 1}`} className="image-preview" />
                           <button
                             type="button"
                             className="btn btn-sm btn-danger image-remove-btn"
@@ -531,7 +553,7 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                           }}
                         >
                           <img
-                            src={url}
+                            src={url || "/placeholder.svg"}
                             alt={`Preview ${idx}`}
                             style={{ width: "100%", height: "100%", objectFit: "cover" }}
                           />
@@ -545,7 +567,7 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                       ))}
 
                       {/* Add more button (only show if less than 5 images total) */}
-                      {(existingShopImages.length + previewUrls.length) < 5 && (
+                      {existingShopImages.length + previewUrls.length < 5 && (
                         <label
                           htmlFor="shop-image-upload"
                           className="d-flex align-items-center justify-content-center border rounded"
@@ -579,48 +601,56 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               </div>
               <div className="row">
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">Personal Email<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Personal Email<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.personalEmail ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.personalEmail ? "is-invalid" : ""}`}
                     name="personalEmail"
                     type="email"
-                    placeholder='Enter you personal email'
+                    placeholder="Enter you personal email"
                     value={formData.personalEmail}
                     onChange={handleChange}
                   />
                   {errors.personalEmail && <div className="invalid-feedback">{errors.personalEmail}</div>}
                 </div>
                 <div className="col-md-3 input-block mb-3">
-                  <label className="form-control-label">Personal Phone<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Personal Phone<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.personalPhone ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.personalPhone ? "is-invalid" : ""}`}
                     name="personalPhone"
                     type="tel"
                     value={formData.personalPhone}
                     onChange={handleChange}
-                    placeholder='Enter you personal contact details'
+                    placeholder="Enter you personal contact details"
                     maxLength="10"
                   />
                   {errors.personalPhone && <div className="invalid-feedback">{errors.personalPhone}</div>}
                 </div>
                 <div className="col-md-3 input-block mb-3">
-                  <label className="form-control-label">Alternate Phone<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Alternate Phone<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.alternatePhone ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.alternatePhone ? "is-invalid" : ""}`}
                     name="alternatePhone"
                     type="tel"
                     value={formData.alternatePhone}
                     onChange={handleChange}
-                    placeholder='Enter you alternate contact details'
+                    placeholder="Enter you alternate contact details"
                     maxLength="10"
                   />
                   {errors.alternatePhone && <div className="invalid-feedback">{errors.alternatePhone}</div>}
                 </div>
                 {/* </div> */}
                 <div className="input-block mb-3 col-md-6">
-                  <label className="form-control-label">Permanent Address<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Permanent Address<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.permanentAddress ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.permanentAddress ? "is-invalid" : ""}`}
                     name="permanentAddress"
                     type="text"
                     value={formData.permanentAddress}
@@ -638,9 +668,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                   />
                 </div>
                 <div className="input-block mb-3 col-md-6">
-                  <label className="form-control-label">Present Address<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Present Address<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
-                    className={`form-control ${errors.presentAddress ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.presentAddress ? "is-invalid" : ""}`}
                     name="presentAddress"
                     type="text"
                     value={formData.presentAddress}
@@ -677,19 +709,21 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               </div>
               <div className="row">
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">PAN Card Front<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    PAN Card Front<em style={{ color: "red" }}>*</em>
+                  </label>
                   {existingImages.panCardFront && (
                     <div className="mb-2">
                       <img
-                        src={existingImages.panCardFront}
+                        src={existingImages.panCardFront || "/placeholder.svg"}
                         alt="PAN Card Front"
                         className="img-thumbnail"
-                        style={{ maxWidth: '100%', maxHeight: '150px' }}
+                        style={{ maxWidth: "100%", maxHeight: "150px" }}
                       />
                       <button
                         type="button"
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => setExistingImages(prev => ({ ...prev, panCardFront: null }))}
+                        onClick={() => setExistingImages((prev) => ({ ...prev, panCardFront: null }))}
                       >
                         Remove
                       </button>
@@ -697,20 +731,22 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                   )}
                   <input
                     type="file"
-                    className={`form-control ${errors.panCardFront ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.panCardFront ? "is-invalid" : ""}`}
                     name="panCardFront"
-                    onChange={(e) => handleFileUpload(e, setPanCardFront, 'panCardFront')}
+                    onChange={(e) => handleFileUpload(e, setPanCardFront, "panCardFront")}
                     accept="image/*"
                   />
                   {errors.panCardFront && <div className="invalid-feedback">{errors.panCardFront}</div>}
                 </div>
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">PAN Card No.<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    PAN Card No.<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
                     type="text"
-                    className={`form-control ${errors.panCardNo ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.panCardNo ? "is-invalid" : ""}`}
                     name="panCardNo"
-                    value={formData.panCardNo || ''}
+                    value={formData.panCardNo || ""}
                     onChange={handleChange}
                     placeholder="Enter PAN number (e.g., ABCDE1234F)"
                     maxLength="10"
@@ -721,19 +757,21 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
 
               <div className="row">
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">Aadhar Front<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Aadhar Front<em style={{ color: "red" }}>*</em>
+                  </label>
                   {existingImages.aadharFront && (
                     <div className="mb-2">
                       <img
-                        src={existingImages.aadharFront}
+                        src={existingImages.aadharFront || "/placeholder.svg"}
                         alt="Aadhar Front"
                         className="img-thumbnail"
-                        style={{ maxWidth: '100%', maxHeight: '150px' }}
+                        style={{ maxWidth: "100%", maxHeight: "150px" }}
                       />
                       <button
                         type="button"
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => setExistingImages(prev => ({ ...prev, aadharFront: null }))}
+                        onClick={() => setExistingImages((prev) => ({ ...prev, aadharFront: null }))}
                       >
                         Remove
                       </button>
@@ -741,27 +779,29 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                   )}
                   <input
                     type="file"
-                    className={`form-control ${errors.aadharFront ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.aadharFront ? "is-invalid" : ""}`}
                     name="aadharFront"
-                    onChange={(e) => handleFileUpload(e, setAadharFront, 'aadharFront')}
+                    onChange={(e) => handleFileUpload(e, setAadharFront, "aadharFront")}
                     accept="image/*"
                   />
                   {errors.aadharFront && <div className="invalid-feedback">{errors.aadharFront}</div>}
                 </div>
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">Aadhar Back<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Aadhar Back<em style={{ color: "red" }}>*</em>
+                  </label>
                   {existingImages.aadharBack && (
                     <div className="mb-2">
                       <img
-                        src={existingImages.aadharBack}
+                        src={existingImages.aadharBack || "/placeholder.svg"}
                         alt="Aadhar Back"
                         className="img-thumbnail"
-                        style={{ maxWidth: '100%', maxHeight: '150px' }}
+                        style={{ maxWidth: "100%", maxHeight: "150px" }}
                       />
                       <button
                         type="button"
                         className="btn btn-sm btn-danger ms-2"
-                        onClick={() => setExistingImages(prev => ({ ...prev, aadharBack: null }))}
+                        onClick={() => setExistingImages((prev) => ({ ...prev, aadharBack: null }))}
                       >
                         Remove
                       </button>
@@ -769,9 +809,9 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                   )}
                   <input
                     type="file"
-                    className={`form-control ${errors.aadharBack ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.aadharBack ? "is-invalid" : ""}`}
                     name="aadharBack"
-                    onChange={(e) => handleFileUpload(e, setAadharBack, 'aadharBack')}
+                    onChange={(e) => handleFileUpload(e, setAadharBack, "aadharBack")}
                     accept="image/*"
                   />
                   {errors.aadharBack && <div className="invalid-feedback">{errors.aadharBack}</div>}
@@ -780,32 +820,35 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
 
               <div className="row">
                 <div className="col-md-6 input-block mb-3">
-                  <label className="form-control-label">Aadhar Card No.<em style={{ color: "red" }}>*</em></label>
+                  <label className="form-control-label">
+                    Aadhar Card No.<em style={{ color: "red" }}>*</em>
+                  </label>
                   <input
                     type="text"
-                    className={`form-control ${errors.aadharCardNo ? 'is-invalid' : ''}`}
+                    className={`form-control ${errors.aadharCardNo ? "is-invalid" : ""}`}
                     name="aadharCardNo"
-                    value={formData.aadharCardNo || ''}
+                    value={formData.aadharCardNo || ""}
                     onChange={handleChange}
                     placeholder="Enter 12-digit Aadhar number"
                     maxLength="12"
                   />
                   {errors.aadharCardNo && <div className="invalid-feedback">{errors.aadharCardNo}</div>}
                 </div>
-
               </div>
 
               {/* Bank Details */}
-              <div className='row'>
+              <div className="row">
                 <div className="text-center">
                   <h4>Bank Information</h4>
                 </div>
                 <div className="mb-3 w-100">
                   <div className="d-flex gap-3">
                     <div className="flex-fill input-block">
-                      <label className="form-control-label">Account Holder Name<em style={{ color: "red" }}>*</em></label>
+                      <label className="form-control-label">
+                        Account Holder Name<em style={{ color: "red" }}>*</em>
+                      </label>
                       <input
-                        className={`form-control ${errors.accountHolderName ? 'is-invalid' : ''}`}
+                        className={`form-control ${errors.accountHolderName ? "is-invalid" : ""}`}
                         type="text"
                         name="accountHolderName"
                         value={formData.accountHolderName}
@@ -815,10 +858,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                       {errors.accountHolderName && <div className="invalid-feedback">{errors.accountHolderName}</div>}
                     </div>
                     <div className="flex-fill input-block">
-                      <label className="form-control-label">IFSC Code<em style={{ color: "red" }}>*</em></label>
+                      <label className="form-control-label">
+                        IFSC Code<em style={{ color: "red" }}>*</em>
+                      </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.ifscCode ? 'is-invalid' : ''}`}
+                        className={`form-control ${errors.ifscCode ? "is-invalid" : ""}`}
                         name="ifscCode"
                         value={formData.ifscCode}
                         onChange={handleChange}
@@ -831,9 +876,11 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                 <div className="mb-3 w-100">
                   <div className="d-flex gap-3">
                     <div className="flex-fill input-block">
-                      <label className="form-control-label">Bank Name<em style={{ color: "red" }}>*</em></label>
+                      <label className="form-control-label">
+                        Bank Name<em style={{ color: "red" }}>*</em>
+                      </label>
                       <input
-                        className={`form-control ${errors.bankName ? 'is-invalid' : ''}`}
+                        className={`form-control ${errors.bankName ? "is-invalid" : ""}`}
                         type="text"
                         name="bankName"
                         value={formData.bankName}
@@ -843,10 +890,12 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
                       {errors.bankName && <div className="invalid-feedback">{errors.bankName}</div>}
                     </div>
                     <div className="flex-fill input-block">
-                      <label className="form-control-label">Account Number<em style={{ color: "red" }}>*</em></label>
+                      <label className="form-control-label">
+                        Account Number<em style={{ color: "red" }}>*</em>
+                      </label>
                       <input
                         type="text"
-                        className={`form-control ${errors.accountNumber ? 'is-invalid' : ''}`}
+                        className={`form-control ${errors.accountNumber ? "is-invalid" : ""}`}
                         name="accountNumber"
                         value={formData.accountNumber}
                         onChange={handleChange}
@@ -861,7 +910,7 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
               {/* Submit Buttons */}
               <div className="form-group col-lg-12 d-flex gap-3 mt-4 mb-5">
                 <button className="btn btn-primary" type="submit">
-                  {isEdit ? 'Update' : 'Create'}
+                  {isEdit ? "Update" : "Create"}
                 </button>
                 <button className="btn btn-danger" type="reset">
                   Cancel
@@ -870,9 +919,9 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
             </form>
           </div>
         </div>
-      </div >
-    </div >
-  );
-};
+      </div>
+    </div>
+  )
+}
 
-export default DealerForm;
+export default DealerForm
