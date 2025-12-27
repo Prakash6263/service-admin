@@ -1,90 +1,101 @@
-import React, { useState, useMemo, useRef } from "react";
-import Swal from "sweetalert2";
-import { useDownloadExcel } from "react-export-table-to-excel";
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import ImagePreview from "../Global/ImagePreview";
-import { deleteBanner } from "../../api";
-const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, datas, text, onBannerDeleted, loading }) => {
+"use client"
 
-  const tableRef = useRef(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showEditModal, setShowEditModal] = useState(false);
+import { useState, useMemo, useRef } from "react"
+import Swal from "sweetalert2"
+import { useDownloadExcel } from "react-export-table-to-excel"
+import jsPDF from "jspdf"
+import "jspdf-autotable"
+import ImagePreview from "../Global/ImagePreview"
+import { deleteBanner } from "../../api"
+
+const IMAGE_BASE_URL = process.env.VITE_IMAGE_BASE_URL || "https://api.mrbikedoctor.cloud/uploads/banners/"
+
+const BannerTable = ({
+  triggerDownloadExcel,
+  triggerDownloadPDF,
+  tableHeaders,
+  datas,
+  text,
+  onBannerDeleted,
+  loading,
+}) => {
+  const tableRef = useRef(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [showEditModal, setShowEditModal] = useState(false)
   const [editFormData, setEditFormData] = useState({
-    _id: '',
-    name: '',
-    banner_image: '',
-    from_date: '',
-    expiry_date: ''
-  });
-  const [editLoading, setEditLoading] = useState(false);
+    _id: "",
+    name: "",
+    banner_image: "",
+    from_date: "",
+    expiry_date: "",
+  })
+  const [editLoading, setEditLoading] = useState(false)
 
   const { onDownload } = useDownloadExcel({
     currentTableRef: tableRef.current,
     filename: "Banner_List",
     sheet: "Banners",
-  });
+  })
 
-  console.log("BannerTable rendered with datas:", datas);
+  console.log("BannerTable rendered with datas:", datas)
 
   const handleEdit = (banner) => {
     setEditFormData({
       _id: banner._id,
-      name: banner.name || '',
-      banner_image: banner.banner_image || '',
-      from_date: banner.from_date ? new Date(banner.from_date).toISOString().split('T')[0] : '',
-      expiry_date: banner.expiry_date ? new Date(banner.expiry_date).toISOString().split('T')[0] : ''
-    });
-    setShowEditModal(true);
-  };
+      name: banner.name || "",
+      banner_image: banner.banner_image || "",
+      from_date: banner.from_date ? new Date(banner.from_date).toISOString().split("T")[0] : "",
+      expiry_date: banner.expiry_date ? new Date(banner.expiry_date).toISOString().split("T")[0] : "",
+    })
+    setShowEditModal(true)
+  }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setEditLoading(true);
+    e.preventDefault()
+    setEditLoading(true)
     try {
       // Add your API call to update banner here
       // Example: const response = await updateBanner(editFormData._id, editFormData);
-      Swal.fire('Success!', 'Banner updated successfully!', 'success');
-      setShowEditModal(false);
-      onBannerDeleted(); // Refresh the list
+      Swal.fire("Success!", "Banner updated successfully!", "success")
+      setShowEditModal(false)
+      onBannerDeleted() // Refresh the list
     } catch (error) {
-      Swal.fire('Error!', 'Failed to update banner', 'error');
+      Swal.fire("Error!", "Failed to update banner", "error")
     } finally {
-      setEditLoading(false);
+      setEditLoading(false)
     }
-  };
+  }
 
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Banner List", 14, 10);
+    const doc = new jsPDF()
+    doc.text("Banner List", 14, 10)
 
-    const table = tableRef.current;
+    const table = tableRef.current
     if (!table) {
-      console.error("Table not found!");
-      return;
+      console.error("Table not found!")
+      return
     }
 
     doc.autoTable({
       html: "#example",
       startY: 20,
       theme: "striped",
-    });
+    })
 
-    doc.save(`${text}.pdf`);
-  };
+    doc.save(`${text}.pdf`)
+  }
 
   const filteredData = useMemo(() => {
-    if (!searchTerm.trim()) return datas;
+    if (!searchTerm.trim()) return datas
     return datas.filter((item) =>
-      [item.name, item._id]
-        .some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [searchTerm, datas]);
+      [item.name, item._id].some((field) => field?.toLowerCase().includes(searchTerm.toLowerCase())),
+    )
+  }, [searchTerm, datas])
 
   const handleDelete = async (bannerId) => {
     Swal.fire({
@@ -98,47 +109,36 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const response = await deleteBanner(bannerId);
+          const response = await deleteBanner(bannerId)
           if (response.status === 200) {
             // Remove deleted dealer from state
-            const updatedData = datas.filter(
-              (banner) => banner._id !== bannerId
-            );
-            datas.splice(0, datas.length, ...updatedData); // Update parent state
-            onBannerDeleted();
-            Swal.fire(
-              "Deleted!",
-              response.message || "Banner deleted successfully.",
-              "success"
-            );
+            const updatedData = datas.filter((banner) => banner._id !== bannerId)
+            datas.splice(0, datas.length, ...updatedData) // Update parent state
+            onBannerDeleted()
+            Swal.fire("Deleted!", response.message || "Banner deleted successfully.", "success")
           } else {
-            Swal.fire(
-              "Error!",
-              response.message || "Deletion failed.",
-              "error"
-            );
+            Swal.fire("Error!", response.message || "Deletion failed.", "error")
           }
         } catch (error) {
-          Swal.fire("Error!", "Failed to delete banner.", "error");
+          Swal.fire("Error!", "Failed to delete banner.", "error")
         }
       }
-    });
-  };
+    })
+  }
 
-  const rowsPerPage = 10;
+  const rowsPerPage = 10
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage)
 
   const currentData = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage;
-    return filteredData.slice(start, start + rowsPerPage);
-  }, [filteredData, currentPage, rowsPerPage]);
+    const start = (currentPage - 1) * rowsPerPage
+    return filteredData.slice(start, start + rowsPerPage)
+  }, [filteredData, currentPage, rowsPerPage])
 
-
-  triggerDownloadExcel.current = onDownload;
-  triggerDownloadPDF.current = exportToPDF;
+  triggerDownloadExcel.current = onDownload
+  triggerDownloadPDF.current = exportToPDF
 
   const memoizedBannerList = useMemo(() => {
     return currentData.map((data, index) => (
@@ -146,11 +146,7 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
         <td>{index + 1}</td>
         <td>{data._id || "N/A"}</td>
         <td>{data.name || "N/A"}</td>
-        <td>
-          {data.banner_image ? (
-            <ImagePreview image={data.banner_image} />
-          ) : "N/A"}
-        </td>
+        <td>{data.banner_image ? <ImagePreview image={`${IMAGE_BASE_URL}${data.banner_image}`} /> : "N/A"}</td>
         <td>{data.from_date ? new Date(data.from_date).toLocaleDateString() : "N/A"}</td>
         <td>{data.expiry_date ? new Date(data.expiry_date).toLocaleDateString() : "N/A"}</td>
         <td>{new Date(data.createdAt).toLocaleDateString()}</td>
@@ -162,10 +158,13 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
             </a>
             <ul className="dropdown-menu dropdown-menu-end">
               <li>
-                <button className="dropdown-item" onClick={(e) => {
-                  e.preventDefault();
-                  handleEdit(data);
-                }}>
+                <button
+                  className="dropdown-item"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    handleEdit(data)
+                  }}
+                >
                   <i className="far fa-edit me-2" /> View
                 </button>
               </li>
@@ -173,8 +172,8 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                 <button
                   className="dropdown-item"
                   onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete(data._id);
+                    e.preventDefault()
+                    handleDelete(data._id)
                   }}
                 >
                   <i className="far fa-trash-alt me-2" /> Delete
@@ -184,8 +183,8 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
           </div>
         </td>
       </tr>
-    ));
-  }, [currentData]);
+    ))
+  }, [currentData])
 
   return (
     <>
@@ -200,21 +199,29 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                   placeholder="Search by promo code, service or discount"
                   value={searchTerm}
                   onChange={(e) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1)
                   }}
                 />
               </div>
               <div className="table-responsive">
                 <table ref={tableRef} id="example" className="table table-striped">
                   <thead className="thead-light" style={{ backgroundColor: "#2e83ff" }}>
-                    <tr>{tableHeaders.map((header, index) => (<th key={index}>{header}</th>))}</tr>
+                    <tr>
+                      {tableHeaders.map((header, index) => (
+                        <th key={index}>{header}</th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody className="list">
                     {loading ? (
                       <tr>
                         <td colSpan={tableHeaders.length} className="text-center py-5">
-                          <div className="spinner-border text-primary" role="status" style={{ width: "3rem", height: "3rem" }}>
+                          <div
+                            className="spinner-border text-primary"
+                            role="status"
+                            style={{ width: "3rem", height: "3rem" }}
+                          >
                             <span className="visually-hidden">Loading...</span>
                           </div>
                           <div className="mt-2">Loading Banners...</div>
@@ -225,10 +232,10 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                         <td colSpan={tableHeaders.length} className="text-center py-5">
                           <div className="d-flex flex-column align-items-center text-muted">
                             <i className="fa fa-box-open mb-3" style={{ fontSize: "2rem", color: "#adb5bd" }}></i>
-                            <h6 className="mb-1" style={{ fontWeight: 600 }}>No Banners Found</h6>
-                            <p style={{ fontSize: "0.9rem", color: "#6c757d", margin: 0 }}>
-                              Add a new banner.
-                            </p>
+                            <h6 className="mb-1" style={{ fontWeight: 600 }}>
+                              No Banners Found
+                            </h6>
+                            <p style={{ fontSize: "0.9rem", color: "#6c757d", margin: 0 }}>Add a new banner.</p>
                           </div>
                         </td>
                       </tr>
@@ -261,21 +268,14 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                         className={`page-item ${pageNum === currentPage ? "active" : ""}`}
                         aria-current={pageNum === currentPage ? "page" : undefined}
                       >
-                        <button
-                          className="page-link"
-                          onClick={() => setCurrentPage(pageNum)}
-                        >
+                        <button className="page-link" onClick={() => setCurrentPage(pageNum)}>
                           {pageNum}
                         </button>
                       </li>
                     ))}
 
                     <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        aria-label="Next"
-                      >
+                      <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} aria-label="Next">
                         &raquo;
                       </button>
                     </li>
@@ -287,7 +287,7 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
         </div>
       </div>
       {showEditModal && (
-        <div className="modal fade show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal fade show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header bg-primary text-white">
@@ -348,56 +348,26 @@ const BannerTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
                         </div>
                       </div>
                       <div className="mb-3">
-                        <label className="form-label">Banner Image URL</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          name="banner_image"
-                          value={editFormData.banner_image}
-                          onChange={handleInputChange}
-                          disabled
-                        />
+                        <label className="form-label">Banner Image</label>
                         {editFormData.banner_image && (
                           <img
-                            src={editFormData.banner_image}
+                            src={`${IMAGE_BASE_URL}${editFormData.banner_image}`}
                             alt="Banner Preview"
                             className="img-thumbnail mt-2"
-                            style={{ maxHeight: '150px' }}
+                            style={{ maxHeight: "200px", width: "100%", objectFit: "contain" }}
                           />
                         )}
                       </div>
                     </>
                   )}
                 </div>
-                {/* <div className="modal-footer">
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setShowEditModal(false)}
-                    disabled={editLoading}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="btn btn-primary"
-                    disabled={editLoading}
-                  >
-                    {editLoading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                        Saving...
-                      </>
-                    ) : 'Save Changes'}
-                  </button>
-                </div> */}
               </form>
             </div>
           </div>
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default BannerTable;
+export default BannerTable

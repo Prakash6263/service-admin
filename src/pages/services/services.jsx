@@ -1,47 +1,54 @@
-import React, { useRef, useState, useEffect } from "react";
-import ServiceTable from "../../components/Service/ServiceTable";
-import { Link } from "react-router-dom";
-import { getServiceList } from "../../api";
+"use client"
+
+import { useRef, useState, useEffect } from "react"
+import ServiceTable from "../../components/Service/ServiceTable"
+import { Link } from "react-router-dom"
+import { getServiceList } from "../../api"
 
 const Services = () => {
-  const [data, setData] = useState([]);
-  const [refresh, setRefresh] = useState(false);
+  const [data, setData] = useState([])
+  const [refresh, setRefresh] = useState(false)
 
   const tableHeaders = [
     "#",
     "Service ID",
     "Service Name",
     "Image",
-    "Description",
-    "Dealer Name",
+    "Companies",
     "Bike Details (CC & Price)",
     "Created At",
     "Updated At",
     "Action",
-  ];
-  
+  ]
 
-  const triggerDownloadExcel = useRef(null);
-  const triggerDownloadPDF = useRef(null);
+  const triggerDownloadExcel = useRef(null)
+  const triggerDownloadPDF = useRef(null)
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getServiceList();
-        if (response.status === 200) {
-          setData(response.data);
+        console.log("[v0] Fetching services from /service/adminservices...")
+        const response = await getServiceList()
+        // Since apiRequest returns response.data, 'response' here is the JSON body.
+        if (response && response.status === true) {
+          console.log("[v0] Data received:", response.data)
+          setData(response.data || [])
+        } else {
+          console.error("[v0] API error or no data:", response)
+          setData([])
         }
       } catch (error) {
-        console.error("Error fetching services:", error);
+        console.error("[v0] Error fetching services:", error)
+        setData([])
       }
-    };
+    }
 
-    fetchServices();
-  }, [refresh]);
+    fetchServices()
+  }, [refresh])
 
   const handleRefresh = () => {
-    setRefresh((prev) => !prev);
-  };
+    setRefresh((prev) => !prev)
+  }
 
   return (
     <div className="page-wrapper">
@@ -54,20 +61,32 @@ const Services = () => {
                 <li>
                   <div className="dropdown dropdown-action">
                     <button className="btn btn-primary" data-bs-toggle="dropdown">
-                      <span><i className="fe fe-download me-2" /></span>
+                      <span>
+                        <i className="fe fe-download me-2" />
+                      </span>
                       Download
                     </button>
                     <div className="dropdown-menu dropdown-menu-end">
                       <ul className="d-block">
                         <li>
-                          <button className="download-item"
-                            onClick={(e) => { e.preventDefault(); if (triggerDownloadExcel.current) triggerDownloadExcel.current(); }}>
+                          <button
+                            className="download-item"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (triggerDownloadExcel.current) triggerDownloadExcel.current()
+                            }}
+                          >
                             <i className="far fa-file-excel me-2" /> EXCEL
                           </button>
                         </li>
                         <li>
-                          <button className="download-item"
-                            onClick={(e) => { e.preventDefault(); if (triggerDownloadPDF.current) triggerDownloadPDF.current(); }}>
+                          <button
+                            className="download-item"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              if (triggerDownloadPDF.current) triggerDownloadPDF.current()
+                            }}
+                          >
                             <i className="far fa-file-pdf me-2" /> PDF
                           </button>
                         </li>
@@ -95,7 +114,7 @@ const Services = () => {
         />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Services;
+export default Services

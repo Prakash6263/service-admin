@@ -1,20 +1,35 @@
-import { useState } from "react";
+"use client"
 
-const IMAGE_BASE_URL = process.env.VITE_IMAGE_BASE_URL || "http://68.178.205.195:8001/image/";
+import { useState } from "react"
+
+const BANNER_BASE_URL = "https://api.mrbikedoctor.cloud/uploads/banners/"
+const ADMIN_SERVICE_BASE_URL = "https://api.mrbikedoctor.cloud/uploads/admin-services/"
+// const BANNER_BASE_URL = "http://localhost:8001/uploads/banners/"
+// const ADMIN_SERVICE_BASE_URL = "http://localhost:8001/uploads/admin-services/"
 
 const ImagePreview = ({ image }) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
 
-  const openImage = () => setIsOpen(true);
-  const closeImage = () => setIsOpen(false);
+  const openImage = () => setIsOpen(true)
+  const closeImage = () => setIsOpen(false)
 
-  if (!image) return "N/A";
+  if (!image) return "N/A"
+
+  let imageUrl = image
+  if (!image.startsWith("http")) {
+    // If it's just a filename, determine the base URL
+    // Banners often start with 'banner-' or are used in BannerTable
+    // We'll default to admin-services for this specific task but try to be smart
+    const isBanner = image.includes("banner")
+    const baseUrl = isBanner ? BANNER_BASE_URL : ADMIN_SERVICE_BASE_URL
+    imageUrl = `${baseUrl}${image}`
+  }
 
   return (
     <>
       {/* Thumbnail Image */}
       <img
-        src={`${IMAGE_BASE_URL}${image}`}
+        src={imageUrl || "/placeholder.svg"}
         alt="User"
         width="50"
         height="50"
@@ -35,12 +50,12 @@ const ImagePreview = ({ image }) => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            zIndex: 1000
+            zIndex: 1000,
           }}
           onClick={closeImage}
         >
           <img
-            src={`${IMAGE_BASE_URL}${image}`}
+            src={imageUrl || "/placeholder.svg"}
             alt="Full Size"
             style={{ width: "100vh !important", borderRadius: "10px" }}
             className="imagespre"
@@ -48,7 +63,7 @@ const ImagePreview = ({ image }) => {
         </div>
       )}
     </>
-  );
-};
+  )
+}
 
-export default ImagePreview;
+export default ImagePreview
