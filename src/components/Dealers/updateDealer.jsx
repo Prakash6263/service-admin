@@ -6,7 +6,7 @@ import Swal from "sweetalert2"
 import { addDealer, updateDealer } from "../../api"
 import { useNavigate } from "react-router-dom"
 
-// const API_BASE_URL = "http://localhost:8001/bikedoctor"/
+// const API_BASE_URL = "http://localhost:8001/bikedoctor"
 const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor"
 
 const DealerForm = ({ dealerData, dealerId, isEdit }) => {
@@ -269,9 +269,10 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
       }
     })
 
-    if (panCardFront) form.append("panCardFront", panCardFront)
-    if (aadharFront) form.append("adharCardFront", aadharFront)
-    if (aadharBack) form.append("shopImages", aadharBack)
+if (panCardFront) form.append("panCardFront", panCardFront)
+if (aadharFront) form.append("aadharFront", aadharFront)
+if (aadharBack) form.append("aadharBack", aadharBack)
+
 
     try {
       let response

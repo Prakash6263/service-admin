@@ -205,8 +205,8 @@ const EditService = () => {
                           <div className="mb-2">
                             <p>Current Image:</p>
                             <img
-                              src={`https://api.mrbikedoctor.cloud/uploads/admin-services/${existingImage}`}
-                            //   src={`http://localhost:8001/uploads/admin-services/${existingImage}`}
+                              src={`${process.env.REACT_APP_IMAGE_BASE_URL}${existingImage}`}
+                              // src={`http://localhost:8001/uploads/admin-services/${existingImage}`}
                               alt="Current service"
                               style={{
                                 maxWidth: "200px",

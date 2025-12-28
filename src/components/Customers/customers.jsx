@@ -151,7 +151,7 @@ const UserTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, dat
                     currentData.map((data, index) => (
                       <tr key={data._id}>
                         <td>{index + 1}</td>
-                        <td>{data._id || "N/A"}</td>
+                        <td>{data?.customerId || "N/A"}</td>
                         <td>{data.first_name || "N/A"}</td>
                         <td>{data.last_name || "N/A"}</td>
                         <td>{data.email || "N/A"}</td>

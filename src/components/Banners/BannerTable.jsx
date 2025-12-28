@@ -8,7 +8,7 @@ import "jspdf-autotable"
 import ImagePreview from "../Global/ImagePreview"
 import { deleteBanner } from "../../api"
 
-const IMAGE_BASE_URL = process.env.VITE_IMAGE_BASE_URL || "https://api.mrbikedoctor.cloud/uploads/banners/"
+const IMAGE_BASE_URL = process.env.REACT_APP_IMAGE_BASE_URL || "http://localhost:8001/"
 
 const BannerTable = ({
   triggerDownloadExcel,
