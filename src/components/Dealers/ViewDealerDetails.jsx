@@ -213,7 +213,7 @@ const VendorDealerDetails = () => {
     let docXOffset = 15
     for (const docItem of docItems) {
       if (docItem.key) {
-        const imgUrl = `https://api.mrbikedoctor.cloud/uploads/dealer-documents/${docItem.key}`
+        const imgUrl = `https://api.mrbikedoctor.cloud/${docItem.key}`
         const base64Img = await convertImageToBase64(imgUrl)
 
         if (base64Img) {

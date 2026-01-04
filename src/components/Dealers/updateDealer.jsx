@@ -14,20 +14,20 @@ const DealerForm = ({ dealerData, dealerId, isEdit }) => {
   const [shopImages, setShopImages] = useState([])
   const [existingShopImages, setExistingShopImages] = useState(
     isEdit && dealerData?.shopImages?.length > 0
-      ? dealerData.shopImages.map((img) => `${API_BASE_URL}/uploads/${img}`)
+      ? dealerData.shopImages.map((img) => `${API_BASE_URL}/${img}`)
       : [],
   )
   const [existingImages, setExistingImages] = useState({
     panCardFront:
       isEdit && dealerData?.documents?.panCardFront
-        ? `${API_BASE_URL}/uploads/${dealerData.documents.panCardFront}`
+        ? `${API_BASE_URL}/${dealerData.documents.panCardFront}`
         : null,
     aadharFront:
       isEdit && dealerData?.documents?.aadharFront
-        ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharFront}`
+        ? `${API_BASE_URL}/${dealerData.documents.aadharFront}`
         : null,
     aadharBack:
-      isEdit && dealerData?.documents?.aadharBack ? `${API_BASE_URL}/uploads/${dealerData.documents.aadharBack}` : null,
+      isEdit && dealerData?.documents?.aadharBack ? `${API_BASE_URL}/${dealerData.documents.aadharBack}` : null,
   })
   const handleMultipleImages = (e) => {
     const files = Array.from(e.target.files)

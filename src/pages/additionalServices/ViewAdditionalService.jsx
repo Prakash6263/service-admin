@@ -41,7 +41,7 @@ const ViewAdditionalService = () => {
                                         <div className="service-image-container mb-4">
                                             {serviceData.image ? (
                                                 <img
-                                                    src={`/uploads/${serviceData.image}`}
+                                                    src={`/${serviceData.image}`}
                                                     alt={serviceData.name}
                                                     className="img-fluid rounded border"
                                                     style={{ maxHeight: '300px' }}

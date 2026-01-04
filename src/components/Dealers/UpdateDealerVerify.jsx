@@ -226,18 +226,18 @@ const DealerForm = ({ dealerData, dealerId, isEdit, isVerified, showApprovalDial
     const [shopImages, setShopImages] = useState([]);
     const [existingShopImages, setExistingShopImages] = useState(
         isEdit && dealerData?.shopImages?.length > 0
-            ? dealerData.shopImages.map(img => `https://api.mrbikedoctor.cloud/uploads/${img}`)
+            ? dealerData.shopImages.map(img => `https://api.mrbikedoctor.cloud/${img}`)
             : []
     );
     const [existingImages, setExistingImages] = useState({
         panCardFront: isEdit && dealerData?.documents?.panCardFront
-            ? `https://api.mrbikedoctor.cloud/uploads/${dealerData.documents.panCardFront}`
+            ? `https://api.mrbikedoctor.cloud/${dealerData.documents.panCardFront}`
             : null,
         aadharFront: isEdit && dealerData?.documents?.aadharFront
-            ? `https://api.mrbikedoctor.cloud/uploads/${dealerData.documents.aadharFront}`
+            ? `https://api.mrbikedoctor.cloud/${dealerData.documents.aadharFront}`
             : null,
         aadharBack: isEdit && dealerData?.documents?.aadharBack
-            ? `https://api.mrbikedoctor.cloud/uploads/${dealerData.documents.aadharBack}`
+            ? `https://api.mrbikedoctor.cloud/${dealerData.documents.aadharBack}`
             : null,
     });
     const handleMultipleImages = (e) => {

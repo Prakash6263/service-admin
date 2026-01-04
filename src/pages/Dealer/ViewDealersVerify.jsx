@@ -18,7 +18,7 @@ const ImagePreview = ({ src, label }) => {
             {src ? (
                 <>
                     <img
-                        src={`/uploads/${src}`}
+                        src={`/${src}`}
                         alt={label}
                         onClick={() => setShow(true)}
                         style={{ width: '100px', height: 'auto', cursor: 'pointer', borderRadius: '4px', border: '1px solid #ccc' }}
@@ -26,7 +26,7 @@ const ImagePreview = ({ src, label }) => {
                     <Modal show={show} onHide={() => setShow(false)} size="lg" centered>
                         <Modal.Body className="text-center">
                             <img
-                                src={`/uploads/${src}`}
+                                src={`/${src}`}
                                 alt="Preview"
                                 style={{ maxWidth: '100%', maxHeight: '80vh' }}
                             />
@@ -155,7 +155,7 @@ const ViewDealersVerify = () => {
                                     <div className="row">
                                         <div className="col-md-4">
                                             <ImagePreview
-                                                src={`https://api.mrbikedoctor.cloud/bikedoctor/uploads/dealer-documents/${dealer.documents?.aadharFront}`}
+                                                src={`https://api.mrbikedoctor.cloud/bikedoctor/${dealer.documents?.aadharFront}`}
                                                 label="Aadhaar Front"
                                             />
                                             <ImagePreview src={dealer.documents?.aadharBack} label="Aadhaar Back" />
