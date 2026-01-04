@@ -658,3 +658,7 @@ export const updateAdminService = async (serviceId, serviceData) => {
     throw error
   }
 }
+
+
+export const getDealerById = (id) =>
+  apiRequest("GET", `/dealer/dealer/${id}`, {}, false)

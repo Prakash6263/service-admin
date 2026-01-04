@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import DealerForm from '../../components/Dealers/updateDealer';
+import { getDealerById } from "../../api"
 import Swal from 'sweetalert2';
 import axios from 'axios';
 
@@ -9,28 +10,22 @@ const DealerUpdate = () => {
     const navigate = useNavigate();
     const [dealerData, setDealerData] = useState(null);
 
-    useEffect(() => {
-        const fetchDealer = async () => {
-            try {
-                const token = localStorage.getItem("adminToken");
-                const res = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/dealer/dealer/${id}`, {
-                // const res = await axios.get(`https://api.mrbikedoctor.cloud/bikedoctor/dealer/dealer/${id}`, {
-                    headers: { token },
-                });
-                console.log("Res data", res.data)
-                if (res.data.status) {
-                    setDealerData(res.data.data);
-                } else {
-                    Swal.fire("Error", "Failed to fetch dealer data", "error");
-                }
-            } catch (err) {
-                console.error(err);
-                Swal.fire("Error", "Something went wrong while fetching dealer data", "error");
-            }
-        };
+useEffect(() => {
+  const fetchDealer = async () => {
+    try {
+      const res = await getDealerById(id)
+      if (res.status) {
+        setDealerData(res.data)
+      } else {
+        Swal.fire("Error", "Failed to fetch dealer data", "error")
+      }
+    } catch (err) {
+      Swal.fire("Error", "Something went wrong while fetching dealer data", "error")
+    }
+  }
 
-        fetchDealer();
-    }, [id]);
+  fetchDealer()
+}, [id])
 
     return (
         <div className="page-wrapper">
