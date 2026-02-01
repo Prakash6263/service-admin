@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +10,7 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
     setOpenDropdown(openDropdown === "Services" ? null : "Services");
   };
 
-  const isServiceActive = ["/addServices", "/additionalservices", "/createaddServices"].includes(activeItem);
+  const isServiceActive = ["/addServices", "/additionalservices", "/createaddServices", "/base-additional-services"].includes(activeItem);
 
   return (
     <li className={`submenu ${isServiceActive ? "active" : ""}`}>
@@ -25,6 +27,11 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
         <li className={activeItem === "/additionalservices" ? "active" : ""}>
           <Link onClick={() => handleMenuClick("/additionalservices")} to="/additionalservices" style={{ textDecoration: "none" }}>
             Additional Service
+          </Link>
+        </li>
+        <li className={activeItem === "/base-additional-services" ? "active" : ""}>
+          <Link onClick={() => handleMenuClick("/base-additional-services")} to="/base-additional-services" style={{ textDecoration: "none" }}>
+            Base Additional Service
           </Link>
         </li>
         {/* <li className={activeItem === "/createaddServices" ? "active" : ""}>

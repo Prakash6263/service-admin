@@ -38,6 +38,10 @@ import ViewDealersVerify from "./pages/Dealer/ViewDealersVerify";
 import UpdateDealerVerify from "./components/Dealers/UpdateDealerVerify";
 import AllTicket from "./pages/ticketSection/AllTicket";
 import NewTicket from "./pages/ticketSection/NewTicket";
+import BaseAdditionalServices from "./pages/baseAdditionalServices/BaseAdditionalServices";
+import CreateBaseAdditionalService from "./pages/baseAdditionalServices/CreateBaseAdditionalService";
+import ViewBaseAdditionalService from "./pages/baseAdditionalServices/ViewBaseAdditionalService";
+import EditBaseAdditionalService from "./pages/baseAdditionalServices/EditBaseAdditionalService";
 
 const ProtectedRoutes = ({ children }) => {
   const token = localStorage.getItem("adminToken")
@@ -86,6 +90,10 @@ const AppContent = () => {
           <Route path="/create-additional-service" element={<CreateAddService />} />
           <Route path="/additional-services/view/:id" element={<ViewAdditionalService />} />
           <Route path="/additional-services/edit/:id" element={<EditAdditionService />} />
+          <Route path="/base-additional-services" element={<BaseAdditionalServices />} />
+          <Route path="/create-base-additional-service" element={<CreateBaseAdditionalService />} />
+          <Route path="/base-additional-services/view/:id" element={<ViewBaseAdditionalService />} />
+          <Route path="/base-additional-services/edit/:id" element={<EditBaseAdditionalService />} />
           <Route path="/dealers" element={<DealerList />} />
           <Route path="/dealers-verify" element={<DealerVerify />} />
           <Route path="/dealer-doc-update" element={<DocumentStatus />} />
