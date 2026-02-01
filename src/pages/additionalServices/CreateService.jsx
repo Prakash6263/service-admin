@@ -1,42 +1,44 @@
+'use client';
+
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { AaddService, getDealerList } from "../../api";
-import axios from "axios";
+import { createAdditionalService, getBaseAdditionalServices } from "../../api/additionalServiceApi";
+import { getDealerList } from "../../api";
 
 const CreateAddService = () => {
-
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: "",
     description: "",
   });
 
-  const [image, setImage] = useState(null);
   const [bikes, setBikes] = useState([{ cc: "", price: "" }]);
   const [dealers, setDealers] = useState([]);
+  const [baseServices, setBaseServices] = useState([]);
   const [selectedDealer, setSelectedDealer] = useState("");
+  const [selectedBaseService, setSelectedBaseService] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchDealers = async () => {
+    const fetchData = async () => {
       try {
-        const response = await getDealerList();
-        setDealers(response?.data || []);
+        const dealerResponse = await getDealerList();
+        setDealers(dealerResponse?.data || []);
+
+        const baseServiceResponse = await getBaseAdditionalServices();
+        setBaseServices(baseServiceResponse?.data || []);
       } catch (error) {
-        console.error("Failed to fetch dealers", error);
+        console.error("Failed to fetch data:", error);
         setDealers([]);
+        setBaseServices([]);
       }
     };
-    fetchDealers();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
-
-  const handleFileChange = (e) => {
-    setImage(e.target.files[0]);
   };
 
   const handleBikeChange = (index, e) => {
@@ -54,50 +56,76 @@ const CreateAddService = () => {
     setBikes(bikes.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = new FormData();
-
-    form.append("name", formData.name);
-    form.append("description", formData.description);
-    form.append("dealer_id", selectedDealer);
-    if (image) form.append("images", image);
-
-    form.append("bikes", JSON.stringify(bikes));
-
-    try {
-      const response = await axios.post(`https://api.mrbikedoctor.cloud/bikedoctor/service/create-additional-service`, form);
-      console.log("Response:", response);
-      Swal.fire({
-        title: "Success!",
-        text: response.message || "Service added successfully.",
-        icon: "success",
-      });
-      if (response?.status === 201) {
-        navigate("/additionalservices")
-      }
-      setFormData({ name: "", description: "" });
-      setImage(null);
-      setBikes([{ cc: "", price: "" }]);
-      setSelectedDealer("");
-    } catch (error) {
-      Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Something went wrong!",
-        icon: "error",
-      });
+  const validateForm = () => {
+    if (!selectedBaseService) {
+      Swal.fire("Validation", "Please select a base additional service", "warning");
+      return false;
     }
+    if (!selectedDealer) {
+      Swal.fire("Validation", "Please select a dealer", "warning");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      Swal.fire("Validation", "Description is required", "warning");
+      return false;
+    }
+    // Validate bikes
+    for (let i = 0; i < bikes.length; i++) {
+      const cc = Number(bikes[i].cc);
+      const price = Number(bikes[i].price);
+      if (!Number.isFinite(cc) || cc <= 0) {
+        Swal.fire("Validation", `Bike #${i + 1}: CC must be a number > 0`, "warning");
+        return false;
+      }
+      if (!Number.isFinite(price) || price <= 0) {
+        Swal.fire("Validation", `Bike #${i + 1}: Price must be a number > 0`, "warning");
+        return false;
+      }
+    }
+    if (bikes.length === 0) {
+      Swal.fire("Validation", "At least one bike CC & Price is required", "warning");
+      return false;
+    }
+    return true;
   };
 
-  console.log("Dealers:", dealers);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const payload = {
+        base_additional_service_id: selectedBaseService,
+        dealer_id: selectedDealer,
+        description: formData.description,
+        bikes,
+      };
+
+      await createAdditionalService(payload);
+      setFormData({ description: "" });
+      setBikes([{ cc: "", price: "" }]);
+      setSelectedDealer("");
+      setSelectedBaseService("");
+      navigate("/additionalservices");
+    } catch (error) {
+      console.error("Error creating service:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="page-wrapper">
       <div className="content container-fluid">
         <div className="page-header">
           <div className="content-page-header">
-            <h5>Create Service</h5>
-            <button className="btn" style={{ backgroundColor: "black", color: "white" }} onClick={() => navigate(-1)}>
+            <h5>Create Additional Service</h5>
+            <button
+              className="btn"
+              style={{ backgroundColor: "black", color: "white" }}
+              onClick={() => navigate(-1)}
+            >
               <i className="fas fa-arrow-left me-2"></i> Back
             </button>
           </div>
@@ -107,29 +135,26 @@ const CreateAddService = () => {
             <div className="card-table card p-3">
               <div className="card-body">
                 <form className="form-horizontal" onSubmit={handleSubmit}>
-                  {/* Service Name */}
+                  {/* Base Additional Service Dropdown */}
                   <div className="input-block mb-3">
-                    <label className="form-control-label">Service Name</label>
-                    <input
+                    <label className="form-control-label">Base Additional Service</label>
+                    <select
                       className="form-control"
-                      name="name"
-                      type="text"
-                      value={formData.name}
-                      onChange={handleChange}
+                      value={selectedBaseService}
+                      onChange={(e) => setSelectedBaseService(e.target.value)}
                       required
-                    />
-                  </div>
-
-                  {/* Description */}
-                  <div className="input-block mb-3">
-                    <label className="form-control-label">Description</label>
-                    <textarea
-                      className="form-control"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
-                      required
-                    ></textarea>
+                    >
+                      <option value="">Select a Base Service</option>
+                      {baseServices.length > 0 ? (
+                        baseServices.map((service) => (
+                          <option key={service._id} value={service._id}>
+                            {service.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>No base services available</option>
+                      )}
+                    </select>
                   </div>
 
                   {/* Dealer Dropdown */}
@@ -152,6 +177,18 @@ const CreateAddService = () => {
                         <option disabled>No dealers available</option>
                       )}
                     </select>
+                  </div>
+
+                  {/* Description */}
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Description</label>
+                    <textarea
+                      className="form-control"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      required
+                    ></textarea>
                   </div>
 
                   {/* Bike CC & Price Fields */}
@@ -178,32 +215,32 @@ const CreateAddService = () => {
                           required
                         />
                         {index > 0 && (
-                          <button type="button" className="btn btn-danger" onClick={() => removeBikeField(index)}>
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => removeBikeField(index)}
+                          >
                             X
                           </button>
                         )}
                       </div>
                     ))}
-                    <button type="button" className="btn btn-success mt-2" onClick={addBikeField}>
+                    <button
+                      type="button"
+                      className="btn btn-success mt-2"
+                      onClick={addBikeField}
+                    >
                       Add More
                     </button>
                   </div>
 
-                  {/* Upload Image */}
-                  <div className="input-block mb-3">
-                    <label className="form-control-label">Upload Service Image</label>
-                    <input
-                      type="file"
-                      className="form-control"
-                      name="image"
-                      onChange={handleFileChange}
-                      required
-                    />
-                  </div>
-
                   <div className="form-group col-lg-12 mb-3">
-                    <button className="btn btn-primary mt-4 mb-5" type="submit">
-                      Create
+                    <button
+                      className="btn btn-primary mt-4 mb-5"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? "Creating..." : "Create"}
                     </button>
                   </div>
                 </form>

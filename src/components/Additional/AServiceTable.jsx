@@ -1,15 +1,24 @@
 'use client';
 
 import React, { useState, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+import Swal from "sweetalert2";
 import ImagePreview from "../Global/ImagePreview";
+import { deleteAdditionalService } from "../../api/additionalServiceApi";
 
-
-const ServiceTable = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, datas, text }) => {
+const ServiceTable = ({
+  triggerDownloadExcel,
+  triggerDownloadPDF,
+  tableHeaders,
+  datas,
+  text,
+  onServiceDeleted,
+}) => {
   const tableRef = useRef(null);
-console.log("datas",datas);
+  const navigate = useNavigate();
 
   const { onDownload } = useDownloadExcel({
     currentTableRef: tableRef.current,
@@ -44,55 +53,107 @@ console.log("datas",datas);
     return datas.slice(start, start + rowsPerPage);
   }, [datas, currentPage]);
 
-  const handleNextPage = () => { if (currentPage < totalPages) setCurrentPage(currentPage + 1); };
-  const handlePrevPage = () => { if (currentPage > 1) setCurrentPage(currentPage - 1); };
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
   triggerDownloadExcel.current = onDownload;
   triggerDownloadPDF.current = exportToPDF;
 
+  const getServiceName = (data) => {
+    // Backward compatibility: prefer base_additional_service_id.name, fallback to name
+    return data.base_additional_service_id?.name || data.name || "N/A";
+  };
+
+  const getServiceImage = (data) => {
+    // Backward compatibility: prefer base_additional_service_id.image, fallback to image
+    return data.base_additional_service_id?.image || data.image || null;
+  };
+
+  const handleEdit = (serviceId) => {
+    navigate(`/edit-additional-service/${serviceId}`);
+  };
+
+  const handleDelete = async (serviceId) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteAdditionalService(serviceId);
+        if (onServiceDeleted) onServiceDeleted();
+      } catch (error) {
+        console.error("Delete error:", error);
+      }
+    }
+  };
+
   const memoizedServiceList = useMemo(() => {
     return currentData.map((data, index) => (
       <tr key={data._id}>
-        <td>{index + 1}</td>
+        <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
         <td>{data._id || "N/A"}</td>
-        <td>{data.name || "N/A"}</td>
+        <td>{getServiceName(data)}</td>
         <td>
-          {data.image ? (
-            <ImagePreview image={`${data.image}`} />
-          ) : "N/A"}
+          {getServiceImage(data) ? (
+            <ImagePreview image={`${getServiceImage(data)}`} />
+          ) : (
+            "N/A"
+          )}
         </td>
         <td>{data.description || "N/A"}</td>
-
-        <td>{data.dealer_id?.name || "N/A"}</td>
-
+        <td>{data.dealer_id?.shopName || "N/A"}</td>
         <td>
           {data.bikes && data.bikes.length > 0 ? (
             <ul>
               {data.bikes.map((bike, idx) => (
-                <li key={idx}>{bike.cc} CC - ₹{bike.price}</li>
+                <li key={idx}>
+                  {bike.cc} CC - ₹{bike.price}
+                </li>
               ))}
             </ul>
-          ) : "N/A"}
+          ) : (
+            "N/A"
+          )}
         </td>
-
-        <td>{new Date(data.createdAt).toLocaleDateString()}</td>
-        <td>{new Date(data.updatedAt).toLocaleDateString()}</td>
-
         <td className="d-flex align-items-center">
           <div className="dropdown">
             <button className="btn-action-icon" data-bs-toggle="dropdown">
               <i className="fas fa-ellipsis-v" />
             </button>
             <ul className="dropdown-menu dropdown-menu-end">
-              <li><button className="dropdown-item" onClick={(e) => e.preventDefault()}><i className="far fa-edit me-2" /> Edit</button></li>
-              <li><button className="dropdown-item" onClick={(e) => e.preventDefault()}><i className="far fa-trash-alt me-2" /> Delete</button></li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleEdit(data._id)}
+                >
+                  <i className="far fa-edit me-2" /> Edit
+                </button>
+              </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => handleDelete(data._id)}
+                >
+                  <i className="far fa-trash-alt me-2" /> Delete
+                </button>
+              </li>
             </ul>
           </div>
         </td>
       </tr>
     ));
   }, [currentData]);
-
 
   return (
     <>
@@ -103,15 +164,33 @@ console.log("datas",datas);
               <div className="table-responsive">
                 <table ref={tableRef} id="example" className="table table-striped">
                   <thead className="thead-light" style={{ backgroundColor: "#2e83ff" }}>
-                    <tr>{tableHeaders.map((header, index) => (<th key={index}>{header}</th>))}</tr>
+                    <tr>
+                      {tableHeaders.map((header, index) => (
+                        <th key={index}>{header}</th>
+                      ))}
+                    </tr>
                   </thead>
                   <tbody className="list">{memoizedServiceList}</tbody>
                 </table>
               </div>
               <div className="d-flex justify-content-between align-items-center mt-3">
-                <button className="btn btn-primary" onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
-                <span>Page {currentPage} of {totalPages}</span>
-                <button className="btn btn-primary" onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
+                <button
+                  className="btn btn-primary"
+                  onClick={handlePrevPage}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="btn btn-primary"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                </button>
               </div>
             </div>
           </div>
