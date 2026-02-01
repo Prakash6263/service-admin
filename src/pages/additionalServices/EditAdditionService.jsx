@@ -249,6 +249,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import { getDealerList } from "../../api";
+import ImagePreview from "../../components/Global/ImagePreview";
 import axios from "axios";
 
 const EditAdditionService = () => {
@@ -490,7 +491,7 @@ const EditAdditionService = () => {
                                         <label className="form-control-label">Upload Service Image (optional)</label>
                                         <input type="file" className="form-control" name="image" onChange={handleFileChange} />
                                         {initialImage && !image && (
-                                            <small className="text-muted">Current image: {initialImage}</small>
+                                            <small className="text-muted">Current image: {<ImagePreview image={initialImage} /> }</small>
                                         )}
                                     </div>
 

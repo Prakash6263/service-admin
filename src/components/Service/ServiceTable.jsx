@@ -26,47 +26,22 @@ const ServiceTable = ({
   const [showEditModal, setShowEditModal] = useState(false)
   const [editFormData, setEditFormData] = useState({
     _id: "",
-    name: "",
-    image: "",
-    description: "",
-    dealer_id: "",
+    base_service_id: {},
+    companies: [],
+    dealer_id: [],
     bikes: [],
   })
-
-  const handleBikeChange = (selectedBikeId) => {
-    setEditFormData((prev) => ({
-      ...prev,
-      bike_id: selectedBikeId,
-    }))
-  }
 
   const handleView = (service) => {
     setEditFormData({
       _id: service._id,
-      name: service.name || "",
-      image: service.image || "",
-      description: service.description || "",
-      dealer_id: service.dealer_id?._id || "",
+      base_service_id: service.base_service_id || {},
+      companies: service.companies || [],
+      dealer_id: service.dealer_id || [],
       bikes: service.bikes || [],
     })
     setShowEditModal(true)
   }
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setEditFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      console.log("Form Data:", editFormData)
-    } catch (err) {
-      Swal.fire("Error", "Something went wrong", "error")
-    }
-  }
-
-  const handleEdit = () => {}
 
   const rowsPerPage = 10
 
@@ -127,11 +102,10 @@ const ServiceTable = ({
     return dataList.filter((item) => {
       const search = searchTerm.toLowerCase()
 
-      const idMatch = item._id?.toLowerCase().includes(search) ?? false
-      const serviceNameMatch = item.name?.toLowerCase().includes(search) ?? false
+      const serviceNameMatch = item.base_service_id?.name?.toLowerCase().includes(search) ?? false
       const companiesMatch = item.companies?.some((company) => company.name?.toLowerCase().includes(search)) ?? false
 
-      return idMatch || serviceNameMatch || companiesMatch
+      return serviceNameMatch || companiesMatch
     })
   }, [datas, searchTerm])
 
@@ -152,9 +126,9 @@ const ServiceTable = ({
   const memoizedServiceList = currentData.map((data, index) => (
     <tr key={data._id}>
       <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-      <td>{data._id || "N/A"}</td>
-      <td>{data.name || "N/A"}</td>
-      <td>{data.image ? <ImagePreview image={data.image} /> : "N/A"}</td>
+      <td>{data.serviceId || "N/A"}</td>
+      <td>{data.base_service_id?.image ? <ImagePreview image={data.base_service_id.image} /> : "N/A"}</td>
+      <td>{data.base_service_id?.name || "N/A"}</td>
       <td style={{ whiteSpace: "normal", wordBreak: "break-word", maxWidth: "300px" }}>
         {data.companies && data.companies.length > 0 ? (
           <div className="d-flex flex-wrap gap-1">
@@ -169,20 +143,46 @@ const ServiceTable = ({
         )}
       </td>
       <td>
+        {data.dealers && data.dealers.length > 0 ? (
+          <div className="d-flex flex-wrap gap-1">
+            {data.dealers.map((dealer, idx) => (
+              <span key={idx} className="badge bg-success text-white">
+                {dealer.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          "N/A"
+        )}
+      </td>
+      <td>
+        {data.dealers && data.dealers.length > 0 ? (
+          <div className="d-flex flex-wrap gap-1">
+            {data.dealers.map((dealer, idx) => (
+              <span key={idx} className="badge bg-secondary text-white">
+                {dealer.shortId}
+              </span>
+            ))}
+          </div>
+        ) : (
+          "N/A"
+        )}
+      </td>
+      {/* <td>
         {data.bikes && data.bikes.length > 0 ? (
           <ul className="mb-0 list-unstyled">
             {data.bikes
               .sort((a, b) => a.cc - b.cc)
               .map((bike, idx) => (
                 <li key={idx} className="small">
-                  {bike.cc} CC - ₹{bike.price}
+                  ₹{bike.price}
                 </li>
               ))}
           </ul>
         ) : (
           "N/A"
         )}
-      </td>
+      </td> */}
       <td>{new Date(data.createdAt).toLocaleDateString()}</td>
       <td>{new Date(data.updatedAt).toLocaleDateString()}</td>
       <td className="d-flex align-items-center">
@@ -193,12 +193,12 @@ const ServiceTable = ({
           <ul className="dropdown-menu dropdown-menu-end">
             <li>
               <button className="dropdown-item" onClick={() => handleView(data)}>
-                <i className="far fa-edit me-2" /> View
+                <i className="far fa-eye me-2" /> View
               </button>
             </li>
             <li>
               <button className="dropdown-item" onClick={() => navigate(`/edit-services/${data._id}`)}>
-                <i className="far fa-edit me-2" /> Edit
+                <i className="far fa-edit me-2" /> Edit Pricing
               </button>
             </li>
             <li>
@@ -222,7 +222,7 @@ const ServiceTable = ({
                 <input
                   type="text"
                   className="form-control"
-                  placeholder="Search by ID, dealer name, or service name"
+                  placeholder="Search by service name or company"
                   value={searchTerm}
                   onChange={(e) => {
                     setSearchTerm(e.target.value)
@@ -254,7 +254,7 @@ const ServiceTable = ({
                     ) : error ? (
                       <tr>
                         <td
-                          colSpan="8"
+                          colSpan={tableHeaders.length}
                           style={{
                             textAlign: "center",
                             color: "red",
@@ -268,7 +268,7 @@ const ServiceTable = ({
                     ) : filteredData.length === 0 ? (
                       <tr>
                         <td
-                          colSpan="8"
+                          colSpan={tableHeaders.length}
                           style={{
                             textAlign: "center",
                             padding: "20px",
@@ -320,92 +320,96 @@ const ServiceTable = ({
           </div>
         </div>
       </div>
+
       {showEditModal && (
         <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <form onSubmit={handleEditSubmit} className="w-100">
-              <div className="modal-content shadow-lg border-0 rounded-3">
-                <div className="modal-header bg-primary text-white">
-                  <h5 className="modal-title">View Service Details</h5>
-                  <button
-                    type="button"
-                    className="btn-close btn-close-white"
-                    onClick={() => setShowEditModal(false)}
-                  ></button>
-                </div>
+            <div className="modal-content shadow-lg border-0 rounded-3">
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title">View Service Details</h5>
+                <button
+                  type="button"
+                  className="btn-close btn-close-white"
+                  onClick={() => setShowEditModal(false)}
+                ></button>
+              </div>
 
-                <div className="modal-body p-4">
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label">Service Name</label>
-                      <input
-                        type="text"
-                        name="name"
-                        className="form-control"
-                        value={editFormData.name}
-                        onChange={handleInputChange}
-                        required
-                        disabled
-                      />
-                    </div>
+              <div className="modal-body p-4">
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="form-label">Service Name (Read-Only)</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editFormData.base_service_id?.name || ""}
+                      disabled
+                    />
+                  </div>
 
-                    <div className="col-md-6">
-                      <label className="form-label">Dealer ID</label>
-                      <input
-                        type="text"
-                        name="dealer_id"
-                        className="form-control"
-                        value={editFormData.dealer_id}
-                        onChange={handleInputChange}
-                        disabled
-                      />
-                    </div>
-
-                    <div className="col-12">
-                      <label className="form-label">Bikes (CC & Price)</label>
-                      {editFormData.bikes.map((bike, index) => (
-                        <div className="row mb-2" key={index}>
-                          <div className="col">
-                            <input
-                              type="number"
-                              name="cc"
-                              placeholder="CC"
-                              className="form-control"
-                              value={bike.cc}
-                              onChange={(e) => handleBikeChange(e, index, "cc")}
-                              disabled
-                            />
-                          </div>
-                          <div className="col">
-                            <input
-                              type="number"
-                              name="price"
-                              placeholder="Price"
-                              className="form-control"
-                              value={bike.price}
-                              onChange={(e) => handleBikeChange(e, index, "price")}
-                              disabled
-                            />
-                          </div>
+                  <div className="col-md-6">
+                    <label className="form-label">Companies (Read-Only)</label>
+                    <div className="form-control" style={{ height: "auto", background: "#f8f9fa" }}>
+                      {editFormData.companies && editFormData.companies.length > 0 ? (
+                        <div className="d-flex flex-wrap gap-1">
+                          {editFormData.companies.map((company, idx) => (
+                            <span key={idx} className="badge bg-info text-dark">
+                              {company.name}
+                            </span>
+                          ))}
                         </div>
-                      ))}
+                      ) : (
+                        <span className="text-muted">No companies</span>
+                      )}
                     </div>
+                  </div>
 
-                    <div className="col-12">
-                      <label className="form-label">Description</label>
-                      <textarea
-                        name="description"
-                        className="form-control"
-                        rows={3}
-                        value={editFormData.description}
-                        onChange={handleInputChange}
-                        disabled
-                      />
+                  <div className="col-12">
+                    <label className="form-label">Dealers (Read-Only)</label>
+                    <div className="form-control" style={{ height: "auto", background: "#f8f9fa" }}>
+                      {editFormData.dealer_id && editFormData.dealer_id.length > 0 ? (
+                        <div className="d-flex flex-wrap gap-1">
+                          {editFormData.dealer_id.map((dealer, idx) => (
+                            <span key={idx} className="badge bg-warning text-dark">
+                              {typeof dealer === "object" ? dealer.name || dealer.shopName : dealer}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted">No dealers</span>
+                      )}
                     </div>
+                  </div>
+
+                  <div className="col-12">
+                    <label className="form-label">Bikes & Pricing</label>
+                    {editFormData.bikes && editFormData.bikes.length > 0 ? (
+                      <div className="table-responsive" style={{ maxHeight: "300px", overflowY: "auto" }}>
+                        <table className="table table-sm table-bordered">
+                          <thead className="table-light">
+                            <tr>
+                              <th>CC</th>
+                              <th>Price (₹)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {editFormData.bikes
+                              .sort((a, b) => a.cc - b.cc)
+                              .map((bike, idx) => (
+                                <tr key={idx}>
+                                  <td>{bike.cc} CC</td>
+                                  <td>₹{bike.price}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <span className="text-muted">No bikes</span>
+                    )}
                   </div>
                 </div>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

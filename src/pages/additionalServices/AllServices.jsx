@@ -5,7 +5,7 @@ import "jspdf-autotable";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-// import ImagePreview from "../Global/ImagePreview";
+import ImagePreview from "../../components/Global/ImagePreview";
 
 const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, datas, text, onServiceDeleted }) => {
 
@@ -100,11 +100,11 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
         return currentData.map((data, index) => (
             <tr key={data._id}>
                 <td>{index + 1}</td>
-                <td>{data._id || "N/A"}</td>
+                <td>{data.serviceId || "N/A"}</td>
                 <td>{data.name || "N/A"}</td>
                 <td>
-                    {/* {data.image ? <ImagePreview image={data.image} /> : "N/A"} */}
-                    {data.image}
+                    {data.image ? <ImagePreview image={data.image} /> : "N/A"}
+                    {/* {data.image} */}
                 </td>
                 <td>{data.description || "N/A"}</td>
 

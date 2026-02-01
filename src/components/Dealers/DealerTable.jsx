@@ -177,7 +177,7 @@ const filteredData = useMemo(() => {
     return currentData?.map((data, index) => (
       <tr key={data._id}>
         <td>{index + 1}</td>
-        <td>{data._id || "N/A"}</td>
+        <td>{data.dealerId || "N/A"}</td>
         <td>{data.commission}%</td>
         <td>{data.tax}%</td>
         <td>{data.ownerName || "N/A"}</td>

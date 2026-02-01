@@ -155,7 +155,7 @@ const ViewDealersVerify = () => {
                                     <div className="row">
                                         <div className="col-md-4">
                                             <ImagePreview
-                                                src={`https://api.mrbikedoctor.cloud/bikedoctor/${dealer.documents?.aadharFront}`}
+                                                src={`https://api.mrbikedoctor.cloud${dealer.documents?.aadharFront}`}
                                                 label="Aadhaar Front"
                                             />
                                             <ImagePreview src={dealer.documents?.aadharBack} label="Aadhaar Back" />

@@ -2,7 +2,7 @@ import axios from "axios"
 import Swal from "sweetalert2"
 
 const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor"
-// const API_BASE_URL = "http://localhost:8001/bikedoctor"
+// const API_BASE_URL = "https://api.mrbikedoctor.cloud/bikedoctor"
 
 // test
 
@@ -186,6 +186,11 @@ export const getBikes = () => apiRequest("GET", "/bike/bikes", {}, false)
 
 // ✅ Fetch all CC list for a selected company
 export const getCCListByCompany = (companyId) => apiRequest("GET", `/bike/bikes/cc-by-company/${companyId}`, {}, false)
+
+export const filterBikesByCompaniesMultiple = (companyIds) => {
+  const queryString = companyIds.join(",")
+  return apiRequest("GET", `/bike/bikes/filter-by-company?companyIds=${queryString}`, {}, false)
+}
 
 export const deleteBike = async (bikeId) => {
   try {
@@ -525,7 +530,7 @@ export const deleteCustomer = async (customerId) => {
     const response = await axios.delete(`${API_BASE_URL}/customers/deletecustomer`, {
       data: { customer_id: customerId }, // DELETE with body
       headers: {
-        "Content-Type": "application/json", // Not multipart/form-data
+        "Content-Type": "application/json",
         token: getAuthToken(),
       },
     })
@@ -630,10 +635,16 @@ export const getAdminServiceById = (serviceId) => apiRequest("GET", `/service/ad
 export const updateAdminService = async (serviceId, serviceData) => {
   try {
     const token = getAuthToken()
-    const response = await axios.put(`${API_BASE_URL}/service/admin/services/${serviceId}`, serviceData, {
+
+    // Check if serviceData is already a JSON string or an object
+    const dataToSend = typeof serviceData === "string" ? JSON.parse(serviceData) : serviceData
+
+    console.log("Updating service with data:", dataToSend)
+
+    const response = await axios.put(`${API_BASE_URL}/service/admin/services/${serviceId}`, dataToSend, {
       headers: {
-        "Content-Type": "multipart/form-data",
-        token: token ? `Bearer ${token}` : "", // Using Bearer prefix as specified in the curl request
+        "Content-Type": "application/json",
+        token: token ? token : "", // Your backend expects just token, not Bearer
       },
     })
 
@@ -659,6 +670,105 @@ export const updateAdminService = async (serviceId, serviceData) => {
   }
 }
 
+export const getDealerById = (id) => apiRequest("GET", `/dealer/dealer/${id}`, {}, false)
 
-export const getDealerById = (id) =>
-  apiRequest("GET", `/dealer/dealer/${id}`, {}, false)
+export const getDealerServices = () => apiRequest("GET", "/service/dealer/services", {}, false)
+
+export const getBaseServiceList = () => apiRequest("GET", "/service/admin/base-services", {}, false)
+
+export const createBaseService = async (serviceData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/service/admin/base-services`, serviceData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        token: getAuthToken(),
+      },
+    })
+
+    Swal.fire({
+      icon: "success",
+      title: "Base Service Created Successfully!",
+      text: response.data.message || "The base service has been created.",
+      timer: 2000,
+      showConfirmButton: false,
+    })
+
+    return response.data
+  } catch (error) {
+    console.error("Error creating base service:", error.response?.data || error.message)
+
+    Swal.fire({
+      icon: "error",
+      title: "Failed to Create Base Service",
+      text: error.response?.data?.message || "Something went wrong!",
+    })
+
+    throw error
+  }
+}
+
+export const getBaseServiceById = (serviceId) =>
+  apiRequest("GET", `/service/admin/base-services/${serviceId}`, {}, false)
+
+export const updateBaseService = async (serviceId, serviceData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/service/admin/base-services/${serviceId}`, serviceData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+        token: getAuthToken(),
+      },
+    })
+
+    Swal.fire({
+      icon: "success",
+      title: "Base Service Updated Successfully!",
+      text: response.data.message || "The base service has been updated.",
+      timer: 2000,
+      showConfirmButton: false,
+    })
+
+    return response.data
+  } catch (error) {
+    console.error("Error updating base service:", error.response?.data || error.message)
+
+    Swal.fire({
+      icon: "error",
+      title: "Failed to Update Base Service",
+      text: error.response?.data?.message || "Something went wrong!",
+    })
+
+    throw error
+  }
+}
+
+export const deleteBaseService = async (serviceId) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/service/admin/base-services/${serviceId}`, {
+      headers: {
+        token: getAuthToken(),
+      },
+    })
+
+    Swal.fire({
+      icon: "success",
+      title: "Success!",
+      text: response.data.message || "Base service deleted successfully",
+      timer: 2000,
+      showConfirmButton: false,
+    })
+
+    return response.data
+  } catch (error) {
+    console.error("Delete failed:", error.response?.data || error.message)
+
+    const errorMessage = error.response?.data?.message || "Could not delete base service"
+
+    Swal.fire({
+      icon: "error",
+      title: "Deletion Failed",
+      text: errorMessage,
+    })
+
+    throw error
+  }
+}

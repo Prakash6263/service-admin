@@ -1,3 +1,5 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import Modal from "react-bootstrap/Modal"
@@ -27,11 +29,7 @@ const ImagePreview = ({ src, label }) => {
   const BASE_URL = process.env.REACT_APP_IMAGE_BASE_URL || ""
 
   // Build correct image URL
-  const imageUrl = src
-    ? src.startsWith("http")
-      ? src
-      : `${BASE_URL}${src}`
-    : null
+  const imageUrl = src ? (src.startsWith("http") ? src : `${BASE_URL}${src}`) : null
 
   return (
     <div className="mb-3">
@@ -56,11 +54,7 @@ const ImagePreview = ({ src, label }) => {
 
           <Modal show={show} onHide={() => setShow(false)} size="lg" centered>
             <Modal.Body className="text-center">
-              <img
-                src={imageUrl || "/placeholder.svg"}
-                alt="Preview"
-                style={{ maxWidth: "100%", maxHeight: "80vh" }}
-              />
+              <img src={imageUrl || "/placeholder.svg"} alt="Preview" style={{ maxWidth: "100%", maxHeight: "80vh" }} />
             </Modal.Body>
           </Modal>
         </>
@@ -71,13 +65,13 @@ const ImagePreview = ({ src, label }) => {
   )
 }
 
-
 const VendorDealerDetails = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const [dealer, setDealer] = useState(null)
   const [dealerServices, setDealersServices] = useState([])
   const [loading, setLoading] = useState(true)
+  const token = localStorage.getItem("token")
 
   const downloadDealerPDF = async () => {
     const doc = new jsPDF()
@@ -314,20 +308,37 @@ const VendorDealerDetails = () => {
 
     const fetchServices = async () => {
       try {
-        const response = await getAServiceList()
-        if (response.status === 200) {
-          console.log("All Services", response.data)
-          const filteredServices = response.data.filter((service) => service.dealer_id._id === id)
-          console.log("Filtered Services for this dealer", filteredServices)
-          setDealersServices(filteredServices)
+        console.log("[v0] Fetching dealer services for dealer_id:", id)
+
+        const response = await fetch(`https://api.mrbikedoctor.cloud/service/dealer/${id}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            token: token || "",
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch services: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        console.log("[v0] Dealer Services Response:", data)
+
+        if (data.status === 200 && Array.isArray(data.data)) {
+          console.log("[v0] Services fetched successfully:", data.data.length, "services found")
+          setDealersServices(data.data)
+        } else {
+          console.warn("[v0] No services found in response")
+          setDealersServices([])
         }
       } catch (error) {
-        console.error("Error fetching services:", error)
+        console.error("[v0] Error fetching dealer services:", error)
+        setDealersServices([])
       }
     }
 
     fetchServices()
-
     fetchDealer()
   }, [id, navigate])
 
@@ -379,17 +390,13 @@ const VendorDealerDetails = () => {
                     <strong>Shop Address:</strong> {dealer.fullAddress || "N/A"}
                   </p>
                   <p>
-                    <strong>Comission:</strong> {dealer.commission} % | <strong>Tax:</strong>: {dealer.tax} %
+                    <strong>Commission:</strong> {dealer.commission} % | <strong>Tax:</strong>: {dealer.tax} %
                   </p>
                   <p>
                     <strong>Shop Images: &nbsp;</strong>
                     {Array.isArray(dealer.shopImages) && dealer.shopImages.length > 0 ? (
                       dealer.shopImages.map((img, i) => (
-    <ImagePreview
-      key={i}
-      src={img}
-      label={`Shop Image ${i + 1}`}
-    />
+                        <ImagePreview key={i} src={img || "/placeholder.svg"} label={`Shop Image ${i + 1}`} />
                       ))
                     ) : (
                       <span className="badge bg-secondary p-2">No Shop Images Uploaded</span>
@@ -435,16 +442,16 @@ const VendorDealerDetails = () => {
                     <FaUniversity className="me-2" /> Banking Information
                   </h5>
                   <p>
-                    <strong>Account Holder:</strong> {dealer?.bankDetails.accountHolderName}
+                    <strong>Account Holder:</strong> {dealer?.bankDetails?.accountHolderName || "N/A"}
                   </p>
                   <p>
-                    <strong>Bank Name:</strong> {dealer?.bankDetails.bankName}
+                    <strong>Bank Name:</strong> {dealer?.bankDetails?.bankName || "N/A"}
                   </p>
                   <p>
-                    <strong>Account No.:</strong> {dealer?.bankDetails.accountNumber}
+                    <strong>Account No.:</strong> {dealer?.bankDetails?.accountNumber || "N/A"}
                   </p>
                   <p>
-                    <strong>IFSC Code:</strong> {dealer?.bankDetails.ifscCode}
+                    <strong>IFSC Code:</strong> {dealer?.bankDetails?.ifscCode || "N/A"}
                   </p>
 
                   {/* Documents */}
@@ -454,23 +461,12 @@ const VendorDealerDetails = () => {
                   </h5>
                   <div className="row">
                     <div className="col-md-4">
-                      <ImagePreview
-                        src={dealer.documents?.aadharFront}
-                        label="Aadhar Front"
-                      />
+                      <ImagePreview src={dealer.documents?.aadharFront || "/placeholder.svg"} label="Aadhar Front" />
 
-                      <ImagePreview
-                        src={dealer.documents?.aadharBack}
-                        label="Aadhar Back"
-                      />
-
+                      <ImagePreview src={dealer.documents?.aadharBack || "/placeholder.svg"} label="Aadhar Back" />
                     </div>
                     <div className="col-md-4">
-                      <ImagePreview
-  src={dealer.documents?.panCardFront}
-  label="PAN Card"
-/>
-
+                      <ImagePreview src={dealer.documents?.panCardFront || "/placeholder.svg"} label="PAN Card" />
                     </div>
                   </div>
 
@@ -481,63 +477,47 @@ const VendorDealerDetails = () => {
                   </h5>
                   {dealerServices.length > 0 ? (
                     <div className="table-responsive">
-                      <table className="table table-bordered table-hover">
+                      <table className="table table-bordered table-hover table-sm">
                         <thead className="thead-dark">
                           <tr>
-                            <th>Sr No.</th>
-                            <th>Image</th>
+                            <th>Service ID</th>
                             <th>Service Name</th>
-                            <th>Bike CC</th>
-                            <th>Price</th>
-                            <th>Created</th>
+                            <th>Bike Model</th>
+                            <th>Company</th>
+                            <th>CC</th>
+                            <th>Price (₹)</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {dealerServices.map((service, serviceIndex) => (
+                          {dealerServices.map((service) => (
                             <React.Fragment key={service._id}>
                               {service.bikes && service.bikes.length > 0 ? (
-                                service.bikes.map((bike, index) => (
-                                  <tr key={`${service._id}-${index}`}>
-                                    {index === 0 ? (
-                                      <>
-                                        {index === 0 && <td rowSpan={service.bikes.length}>{serviceIndex + 1}</td>}
-                                        <td rowSpan={service.bikes.length}>
-                                          {service.image && (
-                                            <ImagePreview
-                                              image={service.image}
-                                              label=""
-                                              style={{ width: "60px", height: "auto" }}
-                                            />
-                                          )}
-                                        </td>
-                                        <td rowSpan={service.bikes.length}>{service.name}</td>
-                                      </>
-                                    ) : null}
-                                    <td>{bike.cc} CC</td>
+                                service.bikes.map((bike, bikeIndex) => (
+                                  <tr key={`${service._id}-${bikeIndex}`}>
+                                    {bikeIndex === 0 && (
+                                      <td rowSpan={service.bikes.length} className="font-weight-bold">
+                                        {service.serviceId || "N/A"}
+                                      </td>
+                                    )}
+                                    {bikeIndex === 0 && (
+                                      <td rowSpan={service.bikes.length}>{service.name}</td>
+                                    )}
+                                    <td>{bike.model_id?.model_name || "N/A"}</td>
+                                    <td>
+                                      {service.companies && service.companies.length > 0
+                                        ? service.companies.map((c) => c.name).join(", ")
+                                        : "N/A"}
+                                    </td>
+                                    <td>{bike.cc}</td>
                                     <td>₹{bike.price}</td>
-                                    {index === 0 ? (
-                                      <>
-                                        <td rowSpan={service.bikes.length}>
-                                          {new Date(service.createdAt).toLocaleDateString()}
-                                        </td>
-                                      </>
-                                    ) : null}
                                   </tr>
                                 ))
                               ) : (
                                 <tr key={`${service._id}-no-bikes`}>
-                                  <td>
-                                    {service.image && (
-                                      <ImagePreview
-                                        image={service.image}
-                                        label=""
-                                        style={{ width: "60px", height: "auto" }}
-                                      />
-                                    )}
-                                  </td>
+                                  <td className="font-weight-bold">{service.serviceId || "N/A"}</td>
                                   <td>{service.name}</td>
-                                  <td colSpan="4" className="text-center">
-                                    No bike configurations
+                                  <td colSpan="4" className="text-center text-muted">
+                                    No bike data available
                                   </td>
                                 </tr>
                               )}
@@ -547,7 +527,7 @@ const VendorDealerDetails = () => {
                       </table>
                     </div>
                   ) : (
-                    <div className="alert alert-info">No services found for this dealer.</div>
+                    <div className="alert alert-info">No services available for this dealer</div>
                   )}
 
                   <p>

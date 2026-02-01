@@ -3,7 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 
-// const API_BASE = "http://localhost:8001/bikedoctor/ticket";
+// const API_BASE = "https://api.mrbikedoctor.cloud/bikedoctor/ticket";
 const API_BASE = "https://api.mrbikedoctor.cloud/bikedoctor/ticket";
 
 const who = (t) => {

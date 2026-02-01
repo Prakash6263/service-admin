@@ -243,7 +243,7 @@ const Alladmins = ({ triggerDownloadExcel, triggerDownloadPDF }) => {
         <td>{admin.email}</td>
         <td>{admin.mobile || "N/A"}</td>
         <td>{admin.role}</td>
-        <td>{admin.employeeId || "Not Assigned"}</td>
+        <td>{admin.ID || "Not Assigned"}</td>
         <td>
           <label className="switch">
             <input

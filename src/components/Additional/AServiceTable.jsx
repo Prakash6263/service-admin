@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useRef } from "react";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import jsPDF from "jspdf";
@@ -55,7 +57,9 @@ console.log("datas",datas);
         <td>{data._id || "N/A"}</td>
         <td>{data.name || "N/A"}</td>
         <td>
-          {data.image ? <ImagePreview image={data.image} /> : "N/A"}
+          {data.image ? (
+            <ImagePreview image={`${data.image}`} />
+          ) : "N/A"}
         </td>
         <td>{data.description || "N/A"}</td>
 

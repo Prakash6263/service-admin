@@ -1,14 +1,24 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+"use client"
+
+import { useState } from "react"
+import { Link } from "react-router-dom"
 
 const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
-  const [openDropdown, setOpenDropdown] = useState(null);
+  const [openDropdown, setOpenDropdown] = useState(null)
 
   const toggleDropdown = () => {
-    setOpenDropdown(openDropdown === "Services" ? null : "Services");
-  };
+    setOpenDropdown(openDropdown === "Services" ? null : "Services")
+  }
 
-  const isServiceActive = ["/addServices", "/additionalservices", "/createaddServices"].includes(activeItem);
+  const isServiceActive = [
+    "/addServices",
+    "/additionalservices",
+    "/createaddServices",
+    "/services",
+    "/base-services",
+    "/create-base-service",
+    "/edit-base-service",
+  ].includes(activeItem)
 
   return (
     <li className={`submenu ${isServiceActive ? "active" : ""}`}>
@@ -17,24 +27,32 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
         <span className="menu-arrow" />
       </Link>
       <ul style={{ display: openDropdown === "Services" ? "block" : "none" }}>
+        <li className={activeItem === "/base-services" ? "active" : ""}>
+          <Link
+            onClick={() => handleMenuClick("/base-services")}
+            to="/base-services"
+            style={{ textDecoration: "none" }}
+          >
+            Admin Services
+          </Link>
+        </li>
         <li className={activeItem === "/services" ? "active" : ""}>
           <Link onClick={() => handleMenuClick("/services")} to="/services" style={{ textDecoration: "none" }}>
-            View Services
+            Dealer Services
           </Link>
         </li>
         <li className={activeItem === "/additionalservices" ? "active" : ""}>
-          <Link onClick={() => handleMenuClick("/additionalservices")} to="/additionalservices" style={{ textDecoration: "none" }}>
+          <Link
+            onClick={() => handleMenuClick("/additionalservices")}
+            to="/additionalservices"
+            style={{ textDecoration: "none" }}
+          >
             Additional Service
           </Link>
         </li>
-        {/* <li className={activeItem === "/createaddServices" ? "active" : ""}>
-          <Link onClick={() => handleMenuClick("/createaddServices")} to="/createaddServices" style={{ textDecoration: "none" }}>
-            Create Additional
-          </Link>
-        </li> */}
       </ul>
     </li>
-  );
-};
+  )
+}
 
-export default ServiceDropdown;
+export default ServiceDropdown

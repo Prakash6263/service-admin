@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { AaddService, getDealerList } from "../../api";
@@ -67,7 +69,7 @@ const ServiceForm = () => {
     form.append("name", formData.name);
     form.append("description", formData.description);
     form.append("dealer_id", selectedDealer); 
-    if (image) form.append("images", image); 
+    if (image) form.append("image", image);
 
     // Append bikes array
     form.append("bikes", JSON.stringify(bikes));

@@ -94,7 +94,7 @@ const AddBike = () => {
         Swal.fire("Success", "Variant added!", "success")
         setVariantName("")
         setEngineCC("")
-        navigate("/bikes")
+        // navigate("/bikes")
       }
     } catch (error) {
       Swal.fire("Error", "Failed to add variant", "error")

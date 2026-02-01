@@ -1,6 +1,8 @@
+'use client';
+
 import { useLocation, useNavigate } from "react-router-dom";
 import { FaArrowLeft, FaTools, FaMotorcycle, FaCalendarAlt, FaUserCog } from "react-icons/fa";
-
+import ImagePreview from "../../components/Global/ImagePreview";
 const ViewAdditionalService = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
@@ -40,12 +42,7 @@ const ViewAdditionalService = () => {
                                     <div className="col-md-6">
                                         <div className="service-image-container mb-4">
                                             {serviceData.image ? (
-                                                <img
-                                                    src={`/${serviceData.image}`}
-                                                    alt={serviceData.name}
-                                                    className="img-fluid rounded border"
-                                                    style={{ maxHeight: '300px' }}
-                                                />
+                                                <ImagePreview image={serviceData.image} />
                                             ) : (
                                                 <div className="no-image-placeholder bg-light d-flex align-items-center justify-content-center"
                                                     style={{ height: '300px' }}>

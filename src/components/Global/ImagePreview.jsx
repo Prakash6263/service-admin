@@ -33,7 +33,7 @@ const ImagePreview = ({ image }) => {
       <img
         src={imageUrl}
         alt="Preview"
-        width={50}
+        width={100}
         height={50}
         style={{
           borderRadius: "6px",
