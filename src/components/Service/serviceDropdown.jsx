@@ -10,7 +10,7 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
     setOpenDropdown(openDropdown === "Services" ? null : "Services");
   };
 
-  const isServiceActive = ["/addServices", "/additionalservices", "/createaddServices", "/base-additional-services"].includes(activeItem);
+  const isServiceActive = ["/addServices", "/additionalservices", "/createaddServices", "/base-additional-services", "/baseServices"].includes(activeItem);
 
   return (
     <li className={`submenu ${isServiceActive ? "active" : ""}`}>
@@ -22,6 +22,11 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
         <li className={activeItem === "/services" ? "active" : ""}>
           <Link onClick={() => handleMenuClick("/services")} to="/services" style={{ textDecoration: "none" }}>
             View Services
+          </Link>
+        </li>
+        <li className={activeItem === "/baseServices" ? "active" : ""}>
+          <Link onClick={() => handleMenuClick("/baseServices")} to="/baseServices" style={{ textDecoration: "none" }}>
+            Base Service
           </Link>
         </li>
         <li className={activeItem === "/additionalservices" ? "active" : ""}>
