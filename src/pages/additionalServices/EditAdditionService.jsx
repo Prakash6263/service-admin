@@ -1,513 +1,419 @@
-// import React, { useEffect, useState } from "react";
-// import { Link, useNavigate, useParams } from "react-router-dom";
-// import Swal from "sweetalert2";
-// import { getDealerList } from "../../api";
-// import axios from "axios";
+'use client';
 
-// const EditAdditionService = () => {
-
-//     const navigate = useNavigate()
-//     const { id } = useParams();
-//     const [formData, setFormData] = useState({
-//         name: "",
-//         description: "",
-//     });
-
-//     const [image, setImage] = useState(null);
-//     const [bikes, setBikes] = useState([{ cc: "", price: "" }]);
-//     const [dealers, setDealers] = useState([]);
-//     const [selectedDealer, setSelectedDealer] = useState("");
-//     const [serviceData, setServiceData] = useState(null);
-
-//     useEffect(() => {
-
-//         const getServices = async () => {
-//             try {
-//                 const res = await axios.get(`https://api.mrbikedoctor.cloud/service/getAdditionalService/${id}`)
-//                 console.log("Service Data:", res.data);
-//                 if (res.status === 200) {
-//                     console.log("Service Data:", res.data.data);
-//                     setServiceData(res.data);
-//                     setFormData({
-//                         name: res.data.data.name,
-//                         description: res.data.data.description,
-//                     });
-//                     setBikes(res.data.data.bikes || [{ cc: "", price: "" }]);
-//                     setSelectedDealer(res.data.data.dealer_id?._id || "");
-//                 }
-//             }
-//             catch (error) { }
-//         }
-
-//         const fetchDealers = async () => {
-//             try {
-//                 const response = await getDealerList();
-//                 setDealers(response?.data || []);
-//             } catch (error) {
-//                 console.error("Failed to fetch dealers", error);
-//                 setDealers([]);
-//             }
-//         };
-//         getServices();
-//         fetchDealers();
-//     }, []);
-
-//     const handleChange = (e) => {
-//         const { name, value } = e.target;
-//         setFormData({ ...formData, [name]: value });
-//     };
-
-//     const handleFileChange = (e) => {
-//         setImage(e.target.files[0]);
-//     };
-
-//     const handleBikeChange = (index, e) => {
-//         const { name, value } = e.target;
-//         const updatedBikes = [...bikes];
-//         updatedBikes[index][name] = value;
-//         setBikes(updatedBikes);
-//     };
-
-//     const addBikeField = () => {
-//         setBikes([...bikes, { cc: "", price: "" }]);
-//     };
-
-//     const removeBikeField = (index) => {
-//         setBikes(bikes.filter((_, i) => i !== index));
-//     };
-
-//     const handleSubmit = async (e) => {
-//         e.preventDefault();
-
-//         const form = new FormData();
-//         form.append("name", formData.name);
-//         form.append("description", formData.description);
-//         form.append("dealer_id", selectedDealer);
-//         form.append("bikes", JSON.stringify(bikes));
-
-//         if (image) {
-//             form.append("image", image);
-//         }
-
-//         try {
-//             const response = await axios.put(
-//                 // `https://travel-backend-dc16.onrender.com/bikedoctor/service/updateAdditionalService/${id}`,
-//                 `https://api.mrbikedoctor.cloud/bikedoctor/service/updateAdditionalService/${id}`,
-//                 form,
-//                 {
-//                     headers: {
-//                         'Content-Type': 'multipart/form-data'
-//                     }
-//                 }
-//             );
-//             Swal.fire({
-//                 title: "Success!",
-//                 text: response.data.message || "Service updated successfully.",
-//                 icon: "success",
-//             });
-
-//             if (response?.status === 200) {
-//                 navigate("/additionalservices");
-//             }
-//         } catch (error) {
-//             Swal.fire({
-//                 title: "Error!",
-//                 text: error.response?.data?.message || "Something went wrong!",
-//                 icon: "error",
-//             });
-//         }
-//     };
-
-//     return (
-//         <div className="page-wrapper">
-//             <div className="content container-fluid">
-//                 <div className="page-header">
-//                     <div className="content-page-header">
-//                         <h5>Edit Service</h5>
-//                         <button className="btn" style={{ backgroundColor: "black", color: "white" }} onClick={() => navigate(-1)}>
-//                             <i className="fas fa-arrow-left me-2"></i> Back
-//                         </button>
-//                     </div>
-//                 </div>
-//                 <div className="row">
-//                     <div className="col-sm-12">
-//                         <div className="card-table card p-3">
-//                             <div className="card-body">
-//                                 <form className="form-horizontal" onSubmit={handleSubmit}>
-//                                     {/* Service Name */}
-//                                     <div className="input-block mb-3">
-//                                         <label className="form-control-label">Service Name</label>
-//                                         <input
-//                                             className="form-control"
-//                                             name="name"
-//                                             type="text"
-//                                             value={formData.name}
-//                                             onChange={handleChange}
-//                                             required
-//                                         />
-//                                     </div>
-
-//                                     {/* Description */}
-//                                     <div className="input-block mb-3">
-//                                         <label className="form-control-label">Description</label>
-//                                         <textarea
-//                                             className="form-control"
-//                                             name="description"
-//                                             value={formData.description}
-//                                             onChange={handleChange}
-//                                             required
-//                                         ></textarea>
-//                                     </div>
-
-//                                     {/* Dealer Dropdown */}
-//                                     <div className="input-block mb-3">
-//                                         <label className="form-control-label">Select Dealer</label>
-//                                         <select
-//                                             className="form-control"
-//                                             value={selectedDealer}
-//                                             onChange={(e) => setSelectedDealer(e.target.value)}
-//                                             required
-//                                         >
-//                                             <option value="">Select a Dealer</option>
-//                                             {dealers.length > 0 ? (
-//                                                 dealers.map((dealer) => (
-//                                                     <option key={dealer._id} value={dealer._id}>
-//                                                         {dealer.shopName}
-//                                                     </option>
-//                                                 ))
-//                                             ) : (
-//                                                 <option disabled>No dealers available</option>
-//                                             )}
-//                                         </select>
-//                                     </div>
-
-//                                     {/* Bike CC & Price Fields */}
-//                                     <div className="input-block mb-3">
-//                                         <label className="form-control-label">Bike CC & Price</label>
-//                                         {bikes.map((bike, index) => (
-//                                             <div key={index} className="d-flex mb-2">
-//                                                 <input
-//                                                     className="form-control me-2"
-//                                                     type="number"
-//                                                     name="cc"
-//                                                     placeholder="Bike CC"
-//                                                     value={bike.cc}
-//                                                     onChange={(e) => handleBikeChange(index, e)}
-//                                                     required
-//                                                 />
-//                                                 <input
-//                                                     className="form-control me-2"
-//                                                     type="number"
-//                                                     name="price"
-//                                                     placeholder="Price"
-//                                                     value={bike.price}
-//                                                     onChange={(e) => handleBikeChange(index, e)}
-//                                                     required
-//                                                 />
-//                                                 {index > 0 && (
-//                                                     <button type="button" className="btn btn-danger" onClick={() => removeBikeField(index)}>
-//                                                         X
-//                                                     </button>
-//                                                 )}
-//                                             </div>
-//                                         ))}
-//                                         <button type="button" className="btn btn-success mt-2" onClick={addBikeField}>
-//                                             Add More
-//                                         </button>
-//                                     </div>
-
-//                                     {/* Upload Image */}
-//                                     <div className="input-block mb-3">
-//                                         <label className="form-control-label">Upload Service Image</label>
-//                                         <input
-//                                             type="file"
-//                                             className="form-control"
-//                                             name="image"
-//                                             onChange={handleFileChange}
-//                                             required
-//                                         />
-//                                     </div>
-
-//                                     <div className="form-group col-lg-12 mb-3">
-//                                         <button className="btn btn-primary mt-4 mb-5" type="submit">
-//                                             Update
-//                                         </button>
-//                                     </div>
-//                                 </form>
-//                             </div>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-
-// export default EditAdditionService
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import {
+  getAdditionalServiceById,
+  updateAdditionalService,
+  getBaseAdditionalServices,
+} from "../../api/additionalServiceApi";
 import { getDealerList } from "../../api";
-import ImagePreview from "../../components/Global/ImagePreview";
-import axios from "axios";
 
 const EditAdditionService = () => {
-    const navigate = useNavigate();
-    const { id } = useParams();
+  const navigate = useNavigate();
+  const { id } = useParams();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-    });
+  const [formData, setFormData] = useState({
+    description: "",
+  });
 
-    const [image, setImage] = useState(null);
-    const [bikes, setBikes] = useState([{ cc: "", price: "" }]);
-    const [dealers, setDealers] = useState([]);
-    const [selectedDealer, setSelectedDealer] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [initialImage, setInitialImage] = useState(null); // show existing image if needed
+  const [bikes, setBikes] = useState([{ cc: "", price: "" }]);
+  const [dealers, setDealers] = useState([]);
+  const [baseServices, setBaseServices] = useState([]);
+  const [selectedDealer, setSelectedDealer] = useState("");
+  const [selectedBaseService, setSelectedBaseService] = useState("");
+  const [selectedBaseServiceObj, setSelectedBaseServiceObj] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [showServiceDropdown, setShowServiceDropdown] = useState(false);
 
-    useEffect(() => {
-        // if id changes, refetch
-        if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-        let mounted = true;
+    let mounted = true;
 
-        const getServices = async () => {
-            try {
-                const res = await axios.get(
-                    // `https://travel-backend-dc16.onrender.com/bikedoctor/service/getAdditionalService/${id}`
-                    `https://api.mrbikedoctor.cloud/bikedoctor/service/getAdditionalService/${id}`
-                );
+    const fetchData = async () => {
+      try {
+        const serviceData = await getAdditionalServiceById(id);
+        if (!mounted) return;
 
-                if (!mounted) return;
-
-                if (res?.status === 200) {
-                    const data = res.data?.data || {};
-                    setFormData({
-                        name: data.name || "",
-                        description: data.description || "",
-                    });
-                    setBikes(Array.isArray(data.bikes) && data.bikes.length ? data.bikes : [{ cc: "", price: "" }]);
-                    setSelectedDealer(data.dealer_id?._id || "");
-                    setInitialImage(data.image || null);
-                } else {
-                    Swal.fire("Error", res?.data?.message || "Failed to fetch service", "error");
-                }
-            } catch (error) {
-                console.error("getServices error:", error);
-                Swal.fire("Error", error.response?.data?.message || "Failed to fetch service", "error");
-            }
-        };
-
-        const fetchDealers = async () => {
-            try {
-                const response = await getDealerList();
-                // assume API returns { data: [...] }
-                setDealers(response?.data || []);
-            } catch (error) {
-                console.error("Failed to fetch dealers", error);
-                setDealers([]);
-            }
-        };
-
-        getServices();
-        fetchDealers();
-
-        return () => {
-            mounted = false;
-        };
-    }, [id]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((s) => ({ ...s, [name]: value }));
-    };
-
-    const handleFileChange = (e) => {
-        const f = e.target.files[0];
-        setImage(f || null);
-    };
-
-    const handleBikeChange = (index, e) => {
-        const { name, value } = e.target;
-        setBikes((prev) => {
-            const copy = [...prev];
-            copy[index] = { ...copy[index], [name]: value };
-            return copy;
+        const service = serviceData?.data || {};
+        setFormData({
+          description: service.description || "",
         });
+
+        // Handle backward compatibility
+        const baseServiceId =
+          service.base_additional_service_id?._id || service.base_additional_service_id || "";
+        setSelectedBaseService(baseServiceId);
+
+        setBikes(
+          Array.isArray(service.bikes) && service.bikes.length
+            ? service.bikes
+            : [{ cc: "", price: "" }]
+        );
+        setSelectedDealer(service.dealer_id?._id || "");
+      } catch (error) {
+        console.error("Error fetching service:", error);
+        Swal.fire("Error", "Failed to fetch service", "error");
+      }
     };
 
-    const addBikeField = () => setBikes((prev) => [...prev, { cc: "", price: "" }]);
-
-    const removeBikeField = (index) => {
-        // keep at least one
-        setBikes((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
+    const fetchDealers = async () => {
+      try {
+        const response = await getDealerList();
+        setDealers(response?.data || []);
+      } catch (error) {
+        console.error("Failed to fetch dealers", error);
+        setDealers([]);
+      }
     };
 
-    const validateForm = () => {
-        if (!formData.name.trim()) {
-            Swal.fire("Validation", "Service name is required", "warning");
-            return false;
-        }
-        if (!selectedDealer) {
-            Swal.fire("Validation", "Please select a dealer", "warning");
-            return false;
-        }
-        // bikes validation: cc and price > 0
-        for (let i = 0; i < bikes.length; i++) {
-            const cc = Number(bikes[i].cc);
-            const price = Number(bikes[i].price);
-            if (!Number.isFinite(cc) || cc <= 0) {
-                Swal.fire("Validation", `Bike #${i + 1}: CC must be a number > 0`, "warning");
-                return false;
+    const fetchBaseServices = async () => {
+      try {
+        const response = await getBaseAdditionalServices();
+        const services = response?.data || [];
+        setBaseServices(services);
+        
+        // After setting base services, find the selected one to populate the object
+        if (mounted) {
+          setTimeout(() => {
+            const serviceData = window.__editServiceData;
+            if (serviceData && services.length > 0) {
+              const baseServiceId = serviceData.base_additional_service_id?._id || serviceData.base_additional_service_id || "";
+              const foundService = services.find(s => s._id === baseServiceId);
+              if (foundService) setSelectedBaseServiceObj(foundService);
             }
-            if (!Number.isFinite(price) || price <= 0) {
-                Swal.fire("Validation", `Bike #${i + 1}: Price must be a number > 0`, "warning");
-                return false;
-            }
+          }, 0);
         }
-        return true;
+      } catch (error) {
+        console.error("Failed to fetch base services", error);
+        setBaseServices([]);
+      }
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
-
-        setLoading(true);
-        try {
-            const form = new FormData();
-            form.append("name", formData.name);
-            form.append("description", formData.description);
-            form.append("dealer_id", selectedDealer);
-            form.append("bikes", JSON.stringify(bikes));
-
-            // only append if user selected a new image on edit
-            if (image) form.append("image", image);
-
-            // DO NOT set Content-Type manually — axios will set boundary for multipart
-            const base =  "https://api.mrbikedoctor.cloud";
-            const response = await axios.put(`${base}/bikedoctor/service/updateAdditionalService/${id}`, form, {
-                // no custom Content-Type header
-                timeout: 20000
-            });
-
-            Swal.fire("Success", response.data.message || "Service updated successfully.", "success");
-            if (response?.status === 200) navigate("/additionalservices");
-        } catch (error) {
-            console.error("Update error:", error);
-            Swal.fire("Error", error.response?.data?.message || "Something went wrong!", "error");
-        } finally {
-            setLoading(false);
-        }
+    const fetchDataAsync = async () => {
+      const serviceData = await getAdditionalServiceById(id);
+      window.__editServiceData = serviceData?.data;
+      fetchData();
+      fetchDealers();
+      fetchBaseServices();
     };
 
-    return (
-        <div className="page-wrapper">
-            <div className="content container-fluid">
-                <div className="page-header">
-                    <div className="content-page-header">
-                        <h5>Edit Service</h5>
-                        <button className="btn" style={{ backgroundColor: "black", color: "white" }} onClick={() => navigate(-1)}>
-                            <i className="fas fa-arrow-left me-2" /> Back
-                        </button>
-                    </div>
-                </div>
+    fetchDataAsync();
 
-                <div className="row">
-                    <div className="col-sm-12">
-                        <div className="card-table card p-3">
-                            <div className="card-body">
-                                <form className="form-horizontal" onSubmit={handleSubmit}>
-                                    <div className="input-block mb-3">
-                                        <label className="form-control-label">Service Name</label>
-                                        <input
-                                            className="form-control"
-                                            name="name"
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
-                                    <div className="input-block mb-3">
-                                        <label className="form-control-label">Description</label>
-                                        <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} />
-                                    </div>
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((s) => ({ ...s, [name]: value }));
+  };
 
-                                    <div className="input-block mb-3">
-                                        <label className="form-control-label">Select Dealer</label>
-                                        <select className="form-control" value={selectedDealer} onChange={(e) => setSelectedDealer(e.target.value)} required>
-                                            <option value="">Select a Dealer</option>
-                                            {dealers.length > 0 ? (
-                                                dealers.map((dealer) => (
-                                                    <option key={dealer._id} value={dealer._id}>
-                                                        {dealer.shopName}
-                                                    </option>
-                                                ))
-                                            ) : (
-                                                <option disabled>No dealers available</option>
-                                            )}
-                                        </select>
-                                    </div>
+  const handleBikeChange = (index, e) => {
+    const { name, value } = e.target;
+    setBikes((prev) => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], [name]: value };
+      return copy;
+    });
+  };
 
-                                    <div className="input-block mb-3">
-                                        <label className="form-control-label">Bike CC & Price</label>
-                                        {bikes.map((bike, index) => (
-                                            <div key={index} className="d-flex mb-2">
-                                                <input
-                                                    className="form-control me-2"
-                                                    type="number"
-                                                    name="cc"
-                                                    placeholder="Bike CC"
-                                                    value={bike.cc}
-                                                    onChange={(e) => handleBikeChange(index, e)}
-                                                    required
-                                                />
-                                                <input
-                                                    className="form-control me-2"
-                                                    type="number"
-                                                    name="price"
-                                                    placeholder="Price"
-                                                    value={bike.price}
-                                                    onChange={(e) => handleBikeChange(index, e)}
-                                                    required
-                                                />
-                                                {index > 0 && (
-                                                    <button type="button" className="btn btn-danger" onClick={() => removeBikeField(index)}>
-                                                        X
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                        <button type="button" className="btn btn-success mt-2" onClick={addBikeField}>
-                                            Add More
-                                        </button>
-                                    </div>
+  const addBikeField = () => setBikes((prev) => [...prev, { cc: "", price: "" }]);
 
-                                    <div className="input-block mb-3">
-                                        <label className="form-control-label">Upload Service Image (optional)</label>
-                                        <input type="file" className="form-control" name="image" onChange={handleFileChange} />
-                                        {initialImage && !image && (
-                                            <small className="text-muted">Current image: {<ImagePreview image={initialImage} /> }</small>
-                                        )}
-                                    </div>
-
-                                    <div className="form-group col-lg-12 mb-3">
-                                        <button className="btn btn-primary mt-4 mb-5" type="submit" disabled={loading}>
-                                            {loading ? "Updating..." : "Update Service"}
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  const removeBikeField = (index) => {
+    setBikes((prev) =>
+      prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)
     );
+  };
+
+  const handleSelectService = (service) => {
+    setSelectedBaseService(service._id);
+    setSelectedBaseServiceObj(service);
+    setShowServiceDropdown(false);
+  };
+
+  const validateForm = () => {
+    if (!selectedBaseService) {
+      Swal.fire("Validation", "Please select a base additional service", "warning");
+      return false;
+    }
+    if (!selectedDealer) {
+      Swal.fire("Validation", "Please select a dealer", "warning");
+      return false;
+    }
+    if (!formData.description.trim()) {
+      Swal.fire("Validation", "Description is required", "warning");
+      return false;
+    }
+    for (let i = 0; i < bikes.length; i++) {
+      const cc = Number(bikes[i].cc);
+      const price = Number(bikes[i].price);
+      if (!Number.isFinite(cc) || cc <= 0) {
+        Swal.fire("Validation", `Bike #${i + 1}: CC must be a number > 0`, "warning");
+        return false;
+      }
+      if (!Number.isFinite(price) || price <= 0) {
+        Swal.fire("Validation", `Bike #${i + 1}: Price must be a number > 0`, "warning");
+        return false;
+      }
+    }
+    if (bikes.length === 0) {
+      Swal.fire("Validation", "At least one bike CC & Price is required", "warning");
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    try {
+      const payload = {
+        base_additional_service_id: selectedBaseService,
+        dealer_id: selectedDealer,
+        description: formData.description,
+        bikes,
+      };
+
+      await updateAdditionalService(id, payload);
+      navigate("/additionalservices");
+    } catch (error) {
+      console.error("Error updating service:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="page-wrapper">
+      <div className="content container-fluid">
+        <div className="page-header">
+          <div className="content-page-header">
+            <h5>Edit Additional Service</h5>
+            <button
+              className="btn"
+              style={{ backgroundColor: "black", color: "white" }}
+              onClick={() => navigate(-1)}
+            >
+              <i className="fas fa-arrow-left me-2" /> Back
+            </button>
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-sm-12">
+            <div className="card-table card p-3">
+              <div className="card-body">
+                <form className="form-horizontal" onSubmit={handleSubmit}>
+                  {/* Base Additional Service Dropdown with Images */}
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Base Additional Service</label>
+                    <div className="position-relative">
+                      <div
+                        className="form-control d-flex align-items-center justify-content-between"
+                        style={{ cursor: "pointer", padding: "10px", minHeight: "38px" }}
+                        onClick={() => setShowServiceDropdown(!showServiceDropdown)}
+                      >
+                        <span>
+                          {selectedBaseServiceObj
+                            ? `${selectedBaseServiceObj.name}`
+                            : "Select a Base Service"}
+                        </span>
+                        <i
+                          className={`fa fa-chevron-down ${
+                            showServiceDropdown ? "rotate-180" : ""
+                          }`}
+                          style={{
+                            transition: "transform 0.2s",
+                            transform: showServiceDropdown ? "rotate(180deg)" : "rotate(0deg)",
+                          }}
+                        />
+                      </div>
+
+                      {showServiceDropdown && (
+                        <div
+                          className="border rounded mt-1 p-2"
+                          style={{
+                            position: "absolute",
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            backgroundColor: "white",
+                            zIndex: 1000,
+                            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
+                            maxHeight: "300px",
+                            overflowY: "auto",
+                          }}
+                        >
+                          {baseServices.length > 0 ? (
+                            baseServices.map((service) => (
+                              <div
+                                key={service._id}
+                                className="d-flex align-items-center p-2 border-bottom"
+                                style={{
+                                  cursor: "pointer",
+                                  backgroundColor:
+                                    selectedBaseService === service._id ? "#e7f3ff" : "transparent",
+                                  borderRadius: "4px",
+                                  marginBottom: "5px",
+                                }}
+                                onClick={() => handleSelectService(service)}
+                              >
+                                {service.image && (
+                                  <img
+                                    src={
+                                      service.image.startsWith("http")
+                                        ? service.image
+                                        : `${process.env.REACT_APP_IMAGE_BASE_URL}${service.image}`
+                                    }
+                                    alt={service.name}
+                                    style={{
+                                      width: "40px",
+                                      height: "40px",
+                                      marginRight: "10px",
+                                      borderRadius: "4px",
+                                      objectFit: "cover",
+                                    }}
+                                    onError={(e) => {
+                                      e.target.src = "/placeholder.svg"
+                                    }}
+                                  />
+                                )}
+                                <span>{service.name}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="p-2 text-muted">No base services available</div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selected Service Image Preview */}
+                  {selectedBaseServiceObj?.image && (
+                    <div className="input-block mb-3">
+                      <label className="form-control-label">Selected Service Image</label>
+                      <div className="border p-2 rounded" style={{ textAlign: "center" }}>
+                        <img
+                          src={
+                            selectedBaseServiceObj.image.startsWith("http")
+                              ? selectedBaseServiceObj.image
+                              : `${process.env.REACT_APP_IMAGE_BASE_URL}${selectedBaseServiceObj.image}`
+                          }
+                          alt={selectedBaseServiceObj.name}
+                          style={{
+                            maxWidth: "100%",
+                            maxHeight: "200px",
+                            borderRadius: "4px",
+                          }}
+                          onError={(e) => {
+                            e.target.src = "/placeholder.svg"
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Dealer Dropdown */}
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Select Dealer</label>
+                    <select
+                      className="form-control"
+                      value={selectedDealer}
+                      onChange={(e) => setSelectedDealer(e.target.value)}
+                      required
+                    >
+                      <option value="">Select a Dealer</option>
+                      {dealers.length > 0 ? (
+                        dealers.map((dealer) => (
+                          <option key={dealer._id} value={dealer._id}>
+                            {dealer.shopName}
+                          </option>
+                        ))
+                      ) : (
+                        <option disabled>No dealers available</option>
+                      )}
+                    </select>
+                  </div>
+
+                  {/* Description */}
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Description</label>
+                    <textarea
+                      className="form-control"
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  {/* Bike CC & Price */}
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Bike CC & Price</label>
+                    {bikes.map((bike, index) => (
+                      <div key={index} className="d-flex mb-2">
+                        <input
+                          className="form-control me-2"
+                          type="number"
+                          name="cc"
+                          placeholder="Bike CC"
+                          value={bike.cc}
+                          onChange={(e) => handleBikeChange(index, e)}
+                          required
+                        />
+                        <input
+                          className="form-control me-2"
+                          type="number"
+                          name="price"
+                          placeholder="Price"
+                          value={bike.price}
+                          onChange={(e) => handleBikeChange(index, e)}
+                          required
+                        />
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            className="btn btn-danger"
+                            onClick={() => removeBikeField(index)}
+                          >
+                            X
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      className="btn btn-success mt-2"
+                      onClick={addBikeField}
+                    >
+                      Add More
+                    </button>
+                  </div>
+
+                  <div className="form-group col-lg-12 mb-3">
+                    <button
+                      className="btn btn-primary mt-4 mb-5"
+                      type="submit"
+                      disabled={loading}
+                    >
+                      {loading ? "Updating..." : "Update Service"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default EditAdditionService;

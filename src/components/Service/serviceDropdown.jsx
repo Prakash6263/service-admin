@@ -18,6 +18,9 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
     "/base-services",
     "/create-base-service",
     "/edit-base-service",
+    "/base-additional-services",
+    "/create-base-additional-service",
+    "/edit-base-additional-service",
   ].includes(activeItem)
 
   return (
@@ -48,6 +51,15 @@ const ServiceDropdown = ({ activeItem, handleMenuClick }) => {
             style={{ textDecoration: "none" }}
           >
             Additional Service
+          </Link>
+        </li>
+        <li className={activeItem === "/base-additional-services" ? "active" : ""}>
+          <Link
+            onClick={() => handleMenuClick("/base-additional-services")}
+            to="/base-additional-services"
+            style={{ textDecoration: "none" }}
+          >
+            Base Additional Services
           </Link>
         </li>
       </ul>

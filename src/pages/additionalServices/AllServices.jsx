@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo, useRef } from "react";
 import { useDownloadExcel } from "react-export-table-to-excel";
 import jsPDF from "jspdf";
@@ -96,15 +98,22 @@ const AllServices = ({ triggerDownloadExcel, triggerDownloadPDF, tableHeaders, d
     triggerDownloadExcel.current = onDownload;
     triggerDownloadPDF.current = exportToPDF;
 
+    const getServiceName = (data) => {
+        return data.base_additional_service_id?.name || "N/A";
+    };
+
+    const getServiceImage = (data) => {
+        return data.base_additional_service_id?.image || null;
+    };
+
     const memoizedServiceList = useMemo(() => {
         return currentData.map((data, index) => (
             <tr key={data._id}>
                 <td>{index + 1}</td>
                 <td>{data.serviceId || "N/A"}</td>
-                <td>{data.name || "N/A"}</td>
+                <td>{getServiceName(data)}</td>
                 <td>
-                    {data.image ? <ImagePreview image={data.image} /> : "N/A"}
-                    {/* {data.image} */}
+                    {getServiceImage(data) ? <ImagePreview image={getServiceImage(data)} /> : "N/A"}
                 </td>
                 <td>{data.description || "N/A"}</td>
 

@@ -20,7 +20,7 @@ const ImagePreview = ({ image }) => {
 
   if (!image) return "N/A";
 
-  const BASE_URL = process.env.REACT_APP_IMAGE_BASE_URL || "http://localhost:8001/";
+  const BASE_URL = process.env.REACT_APP_IMAGE_BASE_URL
 
   // Build final image URL
   const imageUrl = image.startsWith("http")

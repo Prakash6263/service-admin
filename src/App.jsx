@@ -39,6 +39,8 @@ import AllTicket from "./pages/ticketSection/AllTicket"
 import NewTicket from "./pages/ticketSection/NewTicket"
 import BaseServices from "./pages/services/BaseServices"
 import BaseServiceForm from "./components/Service/BaseServiceForm"
+import BaseAdditionalServices from "./pages/services/BaseAdditionalServices"
+import BaseAdditionalServiceForm from "./components/Additional/BaseAdditionalServiceForm"
 import DealerServices from "./pages/Dealer/DealerServices"
 
 const ProtectedRoutes = ({ children }) => {
@@ -91,6 +93,9 @@ const AppContent = () => {
           <Route path="/base-services" element={<BaseServices />} />
           <Route path="/create-base-service" element={<BaseServiceForm isEdit={false} />} />
           <Route path="/edit-base-service/:id" element={<BaseServiceForm isEdit={true} />} />
+          <Route path="/base-additional-services" element={<BaseAdditionalServices />} />
+          <Route path="/create-base-additional-service" element={<BaseAdditionalServiceForm isEdit={false} />} />
+          <Route path="/edit-base-additional-service/:id" element={<BaseAdditionalServiceForm isEdit={true} />} />
           <Route path="/services" element={<Services />} />
           <Route path="/dealer-services" element={<DealerServices />} />
           <Route path="/edit-services/:id" element={<EditService />} />
