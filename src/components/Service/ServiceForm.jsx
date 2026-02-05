@@ -30,7 +30,7 @@ const ServiceForm = ({ serviceId }) => {
   const [dealers, setDealers] = useState([])
   const [filteredDealers, setFilteredDealers] = useState([])
   const [dealerSearchTerm, setDealerSearchTerm] = useState("")
-  const [selectedDealers, setSelectedDealers] = useState([])
+  const [selectedDealer, setSelectedDealer] = useState("")
   const [formErrors, setFormErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedBaseService, setSelectedBaseService] = useState(null)
@@ -69,11 +69,13 @@ setFormData({
 })
 
 
-            const dealerIds = (serviceData.dealers || []).map(d =>
-  typeof d === "string" ? d : d._id
-)
+            const dealerId = (serviceData.dealer || serviceData.dealers)
+              ? (typeof (serviceData.dealer || serviceData.dealers) === "string"
+                  ? (serviceData.dealer || serviceData.dealers)
+                  : (serviceData.dealer || serviceData.dealers)?._id || "")
+              : ""
 
-setSelectedDealers(dealerIds)
+setSelectedDealer(dealerId)
 
             const companyIds = (serviceData.companies || []).map(c =>
   typeof c === "string" ? c : c._id
@@ -247,8 +249,8 @@ setBikes((prevBikes) => {
       errors.companies = "Please select at least one company"
     }
 
-    if (selectedDealers.length === 0) {
-      errors.dealers = "Please select at least one dealer"
+    if (selectedDealer === "" || !selectedDealer) {
+      errors.dealer = "Please select a dealer"
     }
 
     const invalidBikes = bikes.filter(
@@ -291,14 +293,8 @@ setBikes((prevBikes) => {
     })
   }
 
-  const handleDealerToggle = (dealerId) => {
-    setSelectedDealers((prev) => {
-      if (prev.includes(dealerId)) {
-        return prev.filter((id) => id !== dealerId)
-      } else {
-        return [...prev, dealerId]
-      }
-    })
+  const handleDealerSelect = (dealerId) => {
+    setSelectedDealer(dealerId)
   }
 
   // Handle dealer search
@@ -365,7 +361,7 @@ setBikes((prevBikes) => {
       base_service_id: formData.base_service_id,
       description: formData.description,
       companies: JSON.stringify(selectedCompanies),
-      dealer_id: JSON.stringify(selectedDealers),
+      dealer_id: selectedDealer,
       bikes: JSON.stringify(bikesForSubmission),
     }
 
@@ -500,10 +496,12 @@ setBikes((prevBikes) => {
                           <div key={dealer._id} className="form-check mb-2">
                             <input
                               className="form-check-input"
-                              type="checkbox"
+                              type="radio"
                               id={`dealer-${dealer._id}`}
-                              checked={selectedDealers.includes(dealer._id)}
-                              onChange={() => handleDealerToggle(dealer._id)}
+                              name="dealer"
+                              value={dealer._id}
+                              checked={selectedDealer === dealer._id}
+                              onChange={() => handleDealerSelect(dealer._id)}
                             />
                             <label className="form-check-label" htmlFor={`dealer-${dealer._id}`}>
                               {dealer.shopName || dealer.name}
@@ -517,7 +515,7 @@ setBikes((prevBikes) => {
                         </div>
                       )}
                     </div>
-                    {formErrors.dealers && <div className="text-danger mt-1 small">{formErrors.dealers}</div>}
+                    {formErrors.dealer && <div className="text-danger mt-1 small">{formErrors.dealer}</div>}
                   </div>
 
                   <h5 className="mb-3">Select Companies</h5>
