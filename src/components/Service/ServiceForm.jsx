@@ -20,6 +20,7 @@ const ServiceForm = ({ serviceId }) => {
 
   const [formData, setFormData] = useState({
     base_service_id: "",
+    description: "",
   })
 
   const [baseServices, setBaseServices] = useState([])
@@ -64,6 +65,7 @@ const ServiceForm = ({ serviceId }) => {
 
 setFormData({
   base_service_id: baseServiceId,
+  description: serviceData.description || "",
 })
 
 
@@ -237,6 +239,10 @@ setBikes((prevBikes) => {
       errors.base_service_id = "Please select a base service"
     }
 
+    if (!formData.description || formData.description.trim() === "") {
+      errors.description = "Please enter a description"
+    }
+
     if (selectedCompanies.length === 0) {
       errors.companies = "Please select at least one company"
     }
@@ -357,6 +363,7 @@ setBikes((prevBikes) => {
 
     const formPayload = {
       base_service_id: formData.base_service_id,
+      description: formData.description,
       companies: JSON.stringify(selectedCompanies),
       dealer_id: JSON.stringify(selectedDealers),
       bikes: JSON.stringify(bikesForSubmission),
@@ -429,6 +436,19 @@ setBikes((prevBikes) => {
                       ))}
                     </select>
                     {formErrors.base_service_id && <div className="invalid-feedback">{formErrors.base_service_id}</div>}
+                  </div>
+
+                  <div className="input-block mb-3">
+                    <label className="form-control-label">Description *</label>
+                    <textarea
+                      className={`form-control ${formErrors.description ? "is-invalid" : ""}`}
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      placeholder="Enter service description"
+                      rows="4"
+                    />
+                    {formErrors.description && <div className="invalid-feedback">{formErrors.description}</div>}
                   </div>
 
                   {selectedBaseService && (
