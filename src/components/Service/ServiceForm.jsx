@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Swal from "sweetalert2"
 import {
   addService,
@@ -35,6 +35,7 @@ const ServiceForm = ({ serviceId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedBaseService, setSelectedBaseService] = useState(null)
   const [showDealerDropdown, setShowDealerDropdown] = useState(false)
+  const editInitialLoadDone = useRef(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -69,10 +70,11 @@ setFormData({
 })
 
 
-            const dealerId = (serviceData.dealer || serviceData.dealers)
-              ? (typeof (serviceData.dealer || serviceData.dealers) === "string"
-                  ? (serviceData.dealer || serviceData.dealers)
-                  : (serviceData.dealer || serviceData.dealers)?._id || "")
+            const dealerField = serviceData.dealer_id || serviceData.dealer || serviceData.dealers
+            const dealerId = dealerField
+              ? (typeof dealerField === "string"
+                  ? dealerField
+                  : dealerField?._id || "")
               : ""
 
 setSelectedDealer(dealerId)
@@ -83,50 +85,19 @@ setSelectedDealer(dealerId)
 setSelectedCompanies(companyIds)
 
 
-            if (serviceData.companies && serviceData.companies.length > 0) {
-const companyIds = serviceData.companies.map((c) =>
-  typeof c === "string" ? c : c._id
-)
+            // Build bikes directly from the service response (no separate filter API call)
+            if (serviceData.bikes && serviceData.bikes.length > 0) {
+              // Build a company name lookup from the service companies data
+              const companyNameMap = {}
+              ;(serviceData.companies || []).forEach((c) => {
+                const cId = typeof c === "string" ? c : c._id
+                const cName = typeof c === "string" ? "" : c.name || ""
+                companyNameMap[cId] = cName
+              })
 
-const bikesResponse = await filterBikesByCompaniesMultiple(companyIds)
-
-              if (bikesResponse?.data && Array.isArray(bikesResponse.data)) {
-                const allBikes = bikesResponse.data.map((item) => ({
-                  company_name: item.company_name,
-                  model_name: item.model_name,
-                  variant_name: item.variant_name,
-                  cc: item.engine_cc,
-                  price: null,
-                  model_id: item.model_id,
-                  variant_id: item.variant_id,
-                }))
-
-const mergedBikes = allBikes.map((bike) => {
-  const existingBike = serviceData.bikes.find(
-    (sb) =>
-      (sb.model_id?._id || sb.model_id) === bike.model_id &&
-      (sb.variant_id?._id || sb.variant_id) === bike.variant_id
-  )
-
-  return {
-    ...bike,
-    _id: existingBike?._id,
-    price: existingBike?.price || null,
-  }
-})
-mergedBikes.sort((a, b) => {
-  if (a.price && !b.price) return -1
-  if (!a.price && b.price) return 1
-  return 0
-})
-
-
-                setBikes(mergedBikes)
-              }
-            } else {
               const transformedBikes = serviceData.bikes.map((bike) => ({
                 _id: bike._id,
-                company_name: "Unknown Company",
+                company_name: companyNameMap[Object.keys(companyNameMap)[0]] || "Unknown Company",
                 model_name: bike.model_id?.model_name || "",
                 variant_name: bike.variant_id?.variant_name || "",
                 cc: bike.cc,
@@ -134,8 +105,19 @@ mergedBikes.sort((a, b) => {
                 model_id: bike.model_id?._id || bike.model_id || "",
                 variant_id: bike.variant_id?._id || bike.variant_id || "",
               }))
+
+              transformedBikes.sort((a, b) => {
+                if (a.price && !b.price) return -1
+                if (!a.price && b.price) return 1
+                return 0
+              })
+
               setBikes(transformedBikes)
             }
+
+            // Mark initial edit load as done so the company-change useEffect
+            // doesn't overwrite bikes on first render
+            editInitialLoadDone.current = true
 
             const baseServicesList = baseServicesResponse?.data || []
 const selectedService = baseServicesResponse.data.find(
@@ -172,6 +154,11 @@ setSelectedBaseService(selectedService || null)
 
   useEffect(() => {
     const fetchBikeDetails = async () => {
+      // In edit mode, skip the first run since bikes are already loaded from the service API
+      if (isEditMode && !editInitialLoadDone.current) {
+        return
+      }
+
       if (selectedCompanies.length === 0) {
         if (!isEditMode || bikes.length === 0) {
           setBikes([])
