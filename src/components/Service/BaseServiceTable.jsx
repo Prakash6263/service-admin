@@ -1,197 +1,350 @@
-"use client"
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { deleteBaseService } from "../../api";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  TextField,
+  InputAdornment,
+  TablePagination,
+  IconButton,
+  Box,
+  Typography,
+  Avatar,
+  Tooltip,
+  Skeleton,
+  TableSortLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import InventoryIcon from "@mui/icons-material/Inventory";
 
-import { useState, useMemo, useRef } from "react"
-import Swal from "sweetalert2"
-import ImagePreview from "../Global/ImagePreview"
-import { deleteBaseService } from "../../api"
-import { useNavigate } from "react-router-dom"
+const API_IMAGE_BASE = "https://api.mrbikedoctor.cloud/";
 
 const BaseServiceTable = ({
-  triggerDownloadExcel,
-  triggerDownloadPDF,
-  tableHeaders,
   datas,
-  text,
   onServiceDeleted,
   loading,
+  tableHeaders,
 }) => {
-  const navigate = useNavigate()
-  const tableRef = useRef(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [currentPage, setCurrentPage] = useState(1)
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [order, setOrder] = useState("desc");
+  const [orderBy, setOrderBy] = useState("createdAt");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  const rowsPerPage = 10
+  // Dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState(null);
 
-  const handleDelete = async (serviceId) => {
-    Swal.fire({
-      title: "Are you sure?",
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        try {
-          const response = await deleteBaseService(serviceId)
-          if (response && response.status === true) {
-            onServiceDeleted()
-          }
-        } catch (error) {
-          console.error("[v0] Delete failed in UI:", error)
-        }
+  const getImageUrl = (path) => {
+    if (!path) return null;
+    return path.startsWith("http") ? path : `${API_IMAGE_BASE}${path}`;
+  };
+
+  const handleRequestSort = (property) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const handleDeleteClick = (service) => {
+    setServiceToDelete(service);
+    setDeleteDialogOpen(true);
+    setActionError(null);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!serviceToDelete) return;
+    setActionLoading(true);
+    setActionError(null);
+    try {
+      const response = await deleteBaseService(serviceToDelete._id);
+      if (response && response.status === true) {
+        setDeleteDialogOpen(false);
+        setServiceToDelete(null);
+        if (onServiceDeleted) onServiceDeleted();
       }
-    })
-  }
+    } catch (error) {
+      const msg = error?.response?.data?.message || "Could not delete base service";
+      setActionError(msg);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const filteredData = useMemo(() => {
-    const dataList = Array.isArray(datas) ? datas : []
+    let dataList = Array.isArray(datas) ? [...datas] : [];
 
-    if (searchTerm.trim() === "") return dataList
+    if (searchTerm.trim()) {
+      dataList = dataList.filter((item) =>
+        item.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+      );
+    }
 
-    return dataList.filter((item) => {
-      const search = searchTerm.toLowerCase()
-      const nameMatch = item.name?.toLowerCase().includes(search) ?? false
-      return nameMatch
-    })
-  }, [datas, searchTerm])
+    dataList.sort((a, b) => {
+      let valA = a[orderBy];
+      let valB = b[orderBy];
 
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage)
+      if (orderBy === "createdAt") {
+        valA = new Date(valA);
+        valB = new Date(valB);
+      } else if (typeof valA === "string") {
+        valA = valA.toLowerCase();
+        valB = (valB || "").toLowerCase();
+      }
+
+      if (valA < valB) return order === "asc" ? -1 : 1;
+      if (valA > valB) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return dataList;
+  }, [datas, searchTerm, order, orderBy]);
 
   const currentData = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage
-    return filteredData.slice(start, start + rowsPerPage)
-  }, [filteredData, currentPage])
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page)
-  }
-
-  const memoizedServiceList = currentData.map((data, index) => (
-    <tr key={data._id}>
-      <td>{(currentPage - 1) * rowsPerPage + index + 1}</td>
-      <td>{data.image ? <ImagePreview image={data.image} /> : "N/A"}</td>
-      <td>{data.name || "N/A"}</td>
-      <td>{new Date(data.createdAt).toLocaleDateString()}</td>
-      <td className="d-flex align-items-center">
-        <div className="dropdown">
-          <a href="#" className="btn-action-icon" data-bs-toggle="dropdown">
-            <i className="fas fa-ellipsis-v" />
-          </a>
-          <ul className="dropdown-menu dropdown-menu-end">
-            <li>
-              <button className="dropdown-item" onClick={() => navigate(`/edit-base-service/${data._id}`)}>
-                <i className="far fa-edit me-2" /> Edit
-              </button>
-            </li>
-            <li>
-              <button className="dropdown-item" onClick={() => handleDelete(data._id)}>
-                <i className="far fa-trash-alt me-2" /> Delete
-              </button>
-            </li>
-          </ul>
-        </div>
-      </td>
-    </tr>
-  ))
+    const start = page * rowsPerPage;
+    return filteredData.slice(start, start + rowsPerPage);
+  }, [filteredData, page, rowsPerPage]);
 
   return (
-    <>
-      <div className="row">
-        <div className="col-sm-12">
-          <div className="card-table card p-2">
-            <div className="card-body">
-              <div className="mb-3">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search by service name"
-                  value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    setCurrentPage(1)
-                  }}
-                />
-              </div>
-              <div className="table-responsive">
-                <table ref={tableRef} id="example" className="table table-striped">
-                  <thead className="thead-light" style={{ backgroundColor: "#2e83ff" }}>
-                    <tr>
-                      {tableHeaders.map((header, index) => (
-                        <th key={index}>{header}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="list">
-                    {loading ? (
-                      <tr>
-                        <td colSpan={tableHeaders.length} className="text-center py-5">
-                          <div className="d-flex justify-content-center align-items-center flex-column">
-                            <div className="spinner-border text-primary" role="status">
-                              <span className="visually-hidden">Loading...</span>
-                            </div>
-                            <div className="mt-2">Loading base services...</div>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : filteredData.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan={tableHeaders.length}
-                          style={{
-                            textAlign: "center",
-                            padding: "20px",
-                            fontStyle: "italic",
-                            color: "#555",
-                          }}
-                        >
-                          No Base Services found.
-                        </td>
-                      </tr>
-                    ) : (
-                      memoizedServiceList
-                    )}
-                  </tbody>
-                </table>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mt-4 p-3 bg-light rounded shadow-sm">
-                <div className="text-muted" style={{ fontWeight: "500", fontSize: "0.9rem" }}>
-                  Total Records: <span className="text-primary fw-bold">{filteredData.length}</span>
-                </div>
+    <Box sx={{ width: "100%", mt: 2 }}>
+      {/* Search Header */}
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <TextField
+          variant="outlined"
+          size="small"
+          placeholder="Search by service name..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(0);
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon fontSize="small" color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm && (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setSearchTerm("")}>
+                  <ClearIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+          sx={{ width: { xs: "100%", sm: 340 } }}
+        />
+        <Typography variant="body2" color="text.secondary">
+          {filteredData.length} service{filteredData.length !== 1 ? "s" : ""}
+        </Typography>
+      </Box>
 
-                <nav aria-label="Page navigation">
-                  <ul className="pagination pagination-sm mb-0">
-                    <li className={`page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                      <button
-                        className="page-link"
-                        onClick={() => setCurrentPage(currentPage - 1)}
-                        aria-label="Previous"
+      {/* Styled Table container */}
+      <TableContainer
+        component={Paper}
+        elevation={3}
+        sx={{
+          borderRadius: 2,
+          overflowX: "auto",
+          "&::-webkit-scrollbar": { height: "8px" },
+          "&::-webkit-scrollbar-thumb": { backgroundColor: "#ccc", borderRadius: "10px" },
+        }}
+      >
+        <Table size="small" sx={{ minWidth: 800 }}>
+          <TableHead sx={{ backgroundColor: "#2e83ff" }}>
+            <TableRow>
+              {tableHeaders.map((header) => {
+                const isSortable = header === "Service Name" || header === "Created At";
+                const property = header === "Service Name" ? "name" : "createdAt";
+
+                return (
+                  <TableCell
+                    key={header}
+                    align={header === "Actions" ? "center" : "left"}
+                    sx={{ fontWeight: "bold", py: 1.5, whiteSpace: "nowrap", color: "white" }}
+                  >
+                    {isSortable ? (
+                      <TableSortLabel
+                        active={orderBy === property}
+                        direction={orderBy === property ? order : "asc"}
+                        onClick={() => handleRequestSort(property)}
+                        sx={{
+                          color: "white !important",
+                          "& .MuiTableSortLabel-icon": { color: "white !important" },
+                        }}
                       >
-                        &laquo;
-                      </button>
-                    </li>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <li key={page} className={`page-item ${page === currentPage ? "active" : ""}`}>
-                        <button className="page-link" onClick={() => handlePageChange(page)}>
-                          {page}
-                        </button>
-                      </li>
-                    ))}
-                    <li className={`page-item ${currentPage === totalPages ? "disabled" : ""}`}>
-                      <button className="page-link" onClick={() => setCurrentPage(currentPage + 1)} aria-label="Next">
-                        &raquo;
-                      </button>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
+                        {header}
+                      </TableSortLabel>
+                    ) : (
+                      header
+                    )}
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableHead>
 
-export default BaseServiceTable
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={tableHeaders.length} align="center" sx={{ py: 6 }}>
+                  <CircularProgress size={36} />
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Loading services…
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : currentData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={tableHeaders.length} align="center" sx={{ py: 6 }}>
+                  <Box sx={{ opacity: 0.3, mb: 1 }}>
+                    <InventoryIcon sx={{ fontSize: 40 }} />
+                  </Box>
+                  <Typography variant="body2" color="text.secondary">
+                    No services found
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              currentData.map((service, index) => (
+                <TableRow key={service._id} hover sx={{ "&:hover": { bgcolor: "#f8faff" } }}>
+                  <TableCell sx={{ color: "text.secondary", fontSize: "0.8rem" }}>
+                    {page * rowsPerPage + index + 1}
+                  </TableCell>
+                  <TableCell>
+                    <Avatar
+                      src={getImageUrl(service.image)}
+                      variant="rounded"
+                      sx={{
+                        width: 44,
+                        height: 44,
+                        border: "1px solid #eee",
+                        bgcolor: "#fcfcfc",
+                        fontSize: "1rem",
+                      }}
+                    >
+                      {service.name?.charAt(0)}
+                    </Avatar>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+                      {service.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="caption" color="text.secondary">
+                      {new Date(service.createdAt).toLocaleDateString("en-GB", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="center">
+                    <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+                      <Tooltip title="Edit Service" arrow>
+                        <IconButton
+                          size="small"
+                          sx={{ color: "primary.main", "&:hover": { bgcolor: "primary.lighter" } }}
+                          onClick={() => navigate(`/edit-base-service/${service._id}`)}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete Service" arrow>
+                        <IconButton
+                          size="small"
+                          sx={{ color: "error.main", "&:hover": { bgcolor: "error.lighter" } }}
+                          onClick={() => handleDeleteClick(service)}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      <TablePagination
+        component="div"
+        count={filteredData.length}
+        page={page}
+        onPageChange={(e, newPage) => setPage(newPage)}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 25, 50]}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => { if (!actionLoading) setDeleteDialogOpen(false); }}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1, color: "error.main", pb: 1 }}>
+          <DeleteIcon /> Delete Base Service?
+        </DialogTitle>
+        <DialogContent sx={{ pb: 1 }}>
+          {actionError && (
+            <Alert severity="error" sx={{ mb: 2 }}>{actionError}</Alert>
+          )}
+          <Typography variant="body2" color="text.secondary">
+            Are you sure you want to permanently delete the service <b>"{serviceToDelete?.name}"</b>? This action cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            variant="outlined"
+            size="small"
+            color="inherit"
+            onClick={() => setDeleteDialogOpen(false)}
+            disabled={actionLoading}
+            sx={{ fontWeight: "bold" }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            size="small"
+            color="error"
+            onClick={handleConfirmDelete}
+            disabled={actionLoading}
+            startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : null}
+            sx={{ fontWeight: "bold" }}
+          >
+            Yes, Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+  );
+};
+
+export default BaseServiceTable;
